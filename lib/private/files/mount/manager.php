@@ -20,7 +20,9 @@ class Manager {
 	 * @param MountPoint $mount
 	 */
 	public function addMount(MountPoint $mount) {
-		$this->mounts[$mount->getMountPoint()] = $mount;
+		if ($mount->isAvailable()) {
+			$this->mounts[$mount->getMountPoint()] = $mount;
+		}
 	}
 
 	/**

@@ -345,4 +345,25 @@ interface Storage {
 	 * @return array
 	 */
 	public function getDirectDownload($path);
+
+	/**
+	 * Get availability of the storage
+	 *
+	 * @return bool
+	 */
+	public function getAvailability();
+
+	/**
+	 * Set availability of the storage
+	 *
+	 * @param bool $isAvailable
+	 */
+	public function setAvailability($isAvailable);
+
+	/**
+	 * Get last availability set time
+	 *
+	 * @return int|null
+	 */
+	public function getLastChecked();
 }

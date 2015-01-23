@@ -14,6 +14,8 @@ use OC\Files\Storage\Storage;
 use OCP\Files\Mount\IMountPoint;
 
 class MountPoint implements IMountPoint {
+	const RECHECK_AVAILABILITY = 600; // 10 minutes
+
 	/**
 	 * @var \OC\Files\Storage\Storage $storage
 	 */
@@ -189,5 +191,24 @@ class MountPoint implements IMountPoint {
 	 */
 	public function getOption($name, $default) {
 		return isset($this->mountOptions[$name]) ? $this->mountOptions[$name] : $default;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isAvailable() {
+		$available = $this->getStorage()->getAvailability();
+		if (!$available) {
+			$lastChecked = $this->getStorage()->getLastChecked();
+			if ((time() - $lastChecked) < self::RECHECK_AVAILABILITY) {
+				return false;
+			}
+		}
+		$result = $this->getStorage()->test();
+		// update if rechecking failed storage or storage is now failed
+		if (!$available || !$result) {
+			$this->getStorage()->setAvailability($result);
+		}
+		return $result;
 	}
 }

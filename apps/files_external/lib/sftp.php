@@ -94,7 +94,11 @@ class SFTP extends \OC\Files\Storage\Common {
 		) {
 			return false;
 		}
-		return $this->getConnection()->nlist() !== false;
+		try {
+			return $this->getConnection()->nlist() !== false;
+		} catch (\Exception $e) {
+			return false;
+		}
 	}
 
 	public function getId(){

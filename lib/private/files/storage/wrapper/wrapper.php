@@ -477,4 +477,31 @@ class Wrapper implements \OC\Files\Storage\Storage {
 	public function getDirectDownload($path) {
 		return $this->storage->getDirectDownload($path);
 	}
+
+	/**
+	 * Get availability of the storage
+	 *
+	 * @return bool
+	 */
+	public function getAvailability() {
+		return $this->getStorageCache()->getAvailability();
+	}
+
+	/**
+	 * Set availability of the storage
+	 *
+	 * @param bool $isAvailable
+	 */
+	public function setAvailability($isAvailable) {
+		$this->getStorageCache()->setAvailability($isAvailable);
+	}
+
+	/**
+	 * Get last availability set time
+	 *
+	 * @return int|null
+	 */
+	public function getLastChecked() {
+		return $this->getStorageCache()->getLastChecked();
+	}
 }
