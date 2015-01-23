@@ -21,9 +21,6 @@ class UsersControllerTest extends \Test\TestCase {
 	/** @var \OCP\AppFramework\IAppContainer */
 	private $container;
 
-	/** @var UsersController */
-	private $usersController;
-
 	protected function setUp() {
 		$app = new Application();
 		$this->container = $app->getContainer();
@@ -54,9 +51,9 @@ class UsersControllerTest extends \Test\TestCase {
 			->disableOriginalConstructor()->getMock();
 		$this->container['URLGenerator'] = $this->getMockBuilder('\OCP\IURLGenerator')
 			->disableOriginalConstructor()->getMock();
-
-		$this->usersController = $this->container['UsersController'];
-
+		$this->container['EncryptionStatus'] = [
+			'appEnabled' => false
+		];
 	}
 
 	/**
@@ -169,7 +166,8 @@ class UsersControllerTest extends \Test\TestCase {
 					'storageLocation' => '/home/foo',
 					'lastLogin' => 500,
 					'backend' => 'OC_User_Database',
-					'email' => 'foo@bar.com'
+					'email' => 'foo@bar.com',
+					'isRestoreDisabled' => false,
 				),
 				1 => array(
 					'name' => 'admin',
@@ -180,7 +178,8 @@ class UsersControllerTest extends \Test\TestCase {
 					'storageLocation' => '/home/admin',
 					'lastLogin' => 12,
 					'backend' => 'OC_User_Dummy',
-					'email' => 'admin@bar.com'
+					'email' => 'admin@bar.com',
+					'isRestoreDisabled' => false,
 				),
 				2 => array(
 					'name' => 'bar',
@@ -191,11 +190,12 @@ class UsersControllerTest extends \Test\TestCase {
 					'storageLocation' => '/home/bar',
 					'lastLogin' => 3999,
 					'backend' => 'OC_User_Dummy',
-					'email' => 'bar@dummy.com'
+					'email' => 'bar@dummy.com',
+					'isRestoreDisabled' => false,
 				),
 			)
 		);
-		$response = $this->usersController->index(0, 10, 'gid', 'pattern');
+		$response = $this->container['UsersController']->index(0, 10, 'gid', 'pattern');
 		$this->assertEquals($expectedResponse, $response);
 	}
 
@@ -294,7 +294,8 @@ class UsersControllerTest extends \Test\TestCase {
 					'storageLocation' => '/home/foo',
 					'lastLogin' => 500,
 					'backend' => 'OC_User_Database',
-					'email' => 'foo@bar.com'
+					'email' => 'foo@bar.com',
+					'isRestoreDisabled' => false,
 				),
 				1 => array(
 					'name' => 'admin',
@@ -305,7 +306,8 @@ class UsersControllerTest extends \Test\TestCase {
 					'storageLocation' => '/home/admin',
 					'lastLogin' => 12,
 					'backend' => 'OC_User_Dummy',
-					'email' => 'admin@bar.com'
+					'email' => 'admin@bar.com',
+					'isRestoreDisabled' => false,
 				),
 				2 => array(
 					'name' => 'bar',
@@ -316,11 +318,12 @@ class UsersControllerTest extends \Test\TestCase {
 					'storageLocation' => '/home/bar',
 					'lastLogin' => 3999,
 					'backend' => 'OC_User_Dummy',
-					'email' => 'bar@dummy.com'
+					'email' => 'bar@dummy.com',
+					'isRestoreDisabled' => false,
 				),
 			)
 		);
-		$response = $this->usersController->index(0, 10, '', 'pattern');
+		$response = $this->container['UsersController']->index(0, 10, '', 'pattern');
 		$this->assertEquals($expectedResponse, $response);
 	}
 
@@ -374,11 +377,12 @@ class UsersControllerTest extends \Test\TestCase {
 					'storageLocation' => '/home/foo',
 					'lastLogin' => 500,
 					'backend' => 'OC_User_Database',
-					'email' => null
+					'email' => null,
+					'isRestoreDisabled' => false,
 				)
 			)
 		);
-		$response = $this->usersController->index(0, 10, '','', 'OC_User_Dummy');
+		$response = $this->container['UsersController']->index(0, 10, '','', 'OC_User_Dummy');
 		$this->assertEquals($expectedResponse, $response);
 	}
 
@@ -394,7 +398,7 @@ class UsersControllerTest extends \Test\TestCase {
 			->will($this->returnValue([]));
 
 		$expectedResponse = new DataResponse([]);
-		$response = $this->usersController->index(0, 10, '','', 'OC_User_Dummy');
+		$response = $this->container['UsersController']->index(0, 10, '','', 'OC_User_Dummy');
 		$this->assertEquals($expectedResponse, $response);
 	}
 
@@ -432,11 +436,12 @@ class UsersControllerTest extends \Test\TestCase {
 				'displayname' => null,
 				'quota' => null,
 				'subadmin' => array(),
-				'email' => null
+				'email' => null,
+				'isRestoreDisabled' => false,
 			),
 			Http::STATUS_CREATED
 		);
-		$response = $this->usersController->create('foo', 'password', array());
+		$response = $this->container['UsersController']->create('foo', 'password', array());
 		$this->assertEquals($expectedResponse, $response);
 	}
 
@@ -502,11 +507,12 @@ class UsersControllerTest extends \Test\TestCase {
 				'displayname' => null,
 				'quota' => null,
 				'subadmin' => array(),
-				'email' => null
+				'email' => null,
+				'isRestoreDisabled' => false,
 			),
 			Http::STATUS_CREATED
 		);
-		$response = $this->usersController->create('foo', 'password', array('NewGroup', 'ExistingGroup'));
+		$response = $this->container['UsersController']->create('foo', 'password', array('NewGroup', 'ExistingGroup'));
 		$this->assertEquals($expectedResponse, $response);
 	}
 
@@ -525,7 +531,7 @@ class UsersControllerTest extends \Test\TestCase {
 			),
 			Http::STATUS_FORBIDDEN
 		);
-		$response = $this->usersController->create('foo', 'password', array());
+		$response = $this->container['UsersController']->create('foo', 'password', array());
 		$this->assertEquals($expectedResponse, $response);
 	}
 
@@ -553,7 +559,7 @@ class UsersControllerTest extends \Test\TestCase {
 			),
 			Http::STATUS_FORBIDDEN
 		);
-		$response = $this->usersController->destroy('myself');
+		$response = $this->container['UsersController']->destroy('myself');
 		$this->assertEquals($expectedResponse, $response);
 	}
 
@@ -591,7 +597,7 @@ class UsersControllerTest extends \Test\TestCase {
 			),
 			Http::STATUS_NO_CONTENT
 		);
-		$response = $this->usersController->destroy('UserToDelete');
+		$response = $this->container['UsersController']->destroy('UserToDelete');
 		$this->assertEquals($expectedResponse, $response);
 	}
 	/**
@@ -628,7 +634,7 @@ class UsersControllerTest extends \Test\TestCase {
 			),
 			Http::STATUS_FORBIDDEN
 		);
-		$response = $this->usersController->destroy('UserToDelete');
+		$response = $this->container['UsersController']->destroy('UserToDelete');
 		$this->assertEquals($expectedResponse, $response);
 	}
 
@@ -653,7 +659,7 @@ class UsersControllerTest extends \Test\TestCase {
 			),
 			Http::STATUS_UNPROCESSABLE_ENTITY
 		);
-		$response = $this->usersController->create('foo', 'password', array(), 'invalidMailAdress');
+		$response = $this->container['UsersController']->create('foo', 'password', array(), 'invalidMailAdress');
 		$this->assertEquals($expectedResponse, $response);
 	}
 
@@ -688,8 +694,116 @@ class UsersControllerTest extends \Test\TestCase {
 			->expects($this->never())
 			->method('error');
 
-		$response = $this->usersController->create('foo', 'password', array(), 'validMail@Adre.ss');
+		$response = $this->container['UsersController']->create('foo', 'password', array(), 'validMail@Adre.ss');
 		$this->assertEquals(Http::STATUS_CREATED, $response->getStatus());
+	}
+
+	private function mockUser($userId = 'foo', $displayName = 'M. Foo',
+							  $lastLogin = 500, $home = '/home/foo', $backend = 'OC_User_Database') {
+		$user = $this->getMockBuilder('\OC\User\User')
+			->disableOriginalConstructor()->getMock();
+		$user
+			->expects($this->any())
+			->method('getUID')
+			->will($this->returnValue($userId));
+		$user
+			->expects($this->once())
+			->method('getDisplayName')
+			->will($this->returnValue($displayName));
+		$user
+			->method('getLastLogin')
+			->will($this->returnValue($lastLogin));
+		$user
+			->method('getHome')
+			->will($this->returnValue($home));
+		$user
+			->expects($this->once())
+			->method('getBackendClassName')
+			->will($this->returnValue($backend));
+
+		$result = [
+			'name' => $userId,
+			'displayname' => $displayName,
+			'groups' => null,
+			'subadmin' => array(),
+			'quota' => null,
+			'storageLocation' => $home,
+			'lastLogin' => $lastLogin,
+			'backend' => $backend,
+			'email' => null,
+			'isRestoreDisabled' => false,
+		];
+
+		return [$user, $result];
+	}
+
+	public function testRestorePossibleWithoutEncryption() {
+		list($user, $expectedResult) = $this->mockUser();
+
+		$result = \Test_Helper::invokePrivate($this->container['UsersController'], 'formatUserForIndex', [$user]);
+		$this->assertEquals($expectedResult, $result);
+	}
+
+	public function testRestorePossibleWithAdminAndUserRestore() {
+		list($user, $expectedResult) = $this->mockUser();
+
+		$this->container['EncryptionStatus'] = [
+			'appEnabled' => true,
+			'restoreEnabled' => true
+		];
+
+		$this->container['Config']
+			->expects($this->at(0))
+			->method('getUserValue')
+			->with(
+				$this->anything(),
+				$this->equalTo('files_encryption'),
+				$this->equalTo('recovery_enabled'),
+				$this->anything()
+			)
+			->will($this->returnValue('1'));
+
+		$result = \Test_Helper::invokePrivate($this->container['UsersController'], 'formatUserForIndex', [$user]);
+		$this->assertEquals($expectedResult, $result);
+	}
+
+	public function testRestoreNotPossibleWithoutAdminRestore() {
+		list($user, $expectedResult) = $this->mockUser();
+
+		$this->container['EncryptionStatus'] = [
+			'appEnabled' => true,
+			'restoreEnabled' => false
+		];
+
+		$expectedResult['isRestoreDisabled'] = true;
+
+		$result = \Test_Helper::invokePrivate($this->container['UsersController'], 'formatUserForIndex', [$user]);
+		$this->assertEquals($expectedResult, $result);
+	}
+
+	public function testRestoreNotPossibleWithoutUserRestore() {
+		list($user, $expectedResult) = $this->mockUser();
+
+		$this->container['EncryptionStatus'] = [
+			'appEnabled' => true,
+			'restoreEnabled' => true
+		];
+
+		$this->container['Config']
+			->expects($this->at(0))
+			->method('getUserValue')
+			->with(
+				$this->anything(),
+				$this->equalTo('files_encryption'),
+				$this->equalTo('recovery_enabled'),
+				$this->anything()
+			)
+			->will($this->returnValue('0'));
+
+		$expectedResult['isRestoreDisabled'] = true;
+
+		$result = \Test_Helper::invokePrivate($this->container['UsersController'], 'formatUserForIndex', [$user]);
+		$this->assertEquals($expectedResult, $result);
 	}
 
 }

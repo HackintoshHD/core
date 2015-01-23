@@ -90,7 +90,8 @@ class Application extends App {
 				$c->query('Defaults'),
 				$c->query('Mail'),
 				$c->query('DefaultMailAddress'),
-				$c->query('URLGenerator')
+				$c->query('URLGenerator'),
+				$c->query('EncryptionStatus')
 			);
 		});
 		$container->registerService('LogSettingsController', function(IContainer $c) {
@@ -158,6 +159,20 @@ class Application extends App {
 		});
 		$container->registerService('URLGenerator', function(IContainer $c) {
 			return $c->query('ServerContainer')->getURLGenerator();
+		});
+		/** FIXME: Remove once \OCP\App::isEnabled is non-static and mockable */
+		$container->registerService('EncryptionStatus', function(IContainer $c) {
+			$appEnabled = \OCP\App::isEnabled('files_encryption');
+			$restoreEnabled = false;
+			if ($appEnabled) {
+				// putting this directly in empty is possible in PHP 5.5+
+				$result = $c->query('Config')->getAppValue('files_encryption', 'recoveryAdminEnabled', 0);
+				$restoreEnabled = !empty($result);
+			}
+			return [
+				'appEnabled' => $appEnabled,
+				'restoreEnabled' => $restoreEnabled,
+			];
 		});
 	}
 }
