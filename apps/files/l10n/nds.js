@@ -1,9 +1,19 @@
 OC.L10N.register(
     "files",
     {
-    "_%n folder_::_%n folders_" : ["",""],
-    "_%n file_::_%n files_" : ["",""],
-    "_Uploading %n file_::_Uploading %n files_" : ["",""],
-    "_matches '{filter}'_::_match '{filter}'_" : ["",""]
+    "Saved" : "Gespeichert",
+    "Close" : "Schließen",
+    "Download" : "Download",
+    "Delete" : "Löschen",
+    "Files" : "Dateien",
+    "Details" : "Details",
+    "Could not move \"{file}\", target exists" : "\"{file}\" konnte nicht verschoben werden, weil das Ziel schon existiert",
+    "Could not move \"{file}\"" : "\"{file}\" konnte nicht verschoben werden",
+    "Name" : "Name",
+    "New" : "Neu",
+    "New folder" : "Neuer Ordner",
+    "Upload" : "Hochladen",
+    "Settings" : "Einstellungen",
+    "WebDAV" : "WebDAV"
 },
 "nplurals=2; plural=(n != 1);");

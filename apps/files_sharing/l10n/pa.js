@@ -3,6 +3,7 @@ OC.L10N.register(
     {
     "Cancel" : "ਰੱਦ ਕਰੋ",
     "Share" : "ਸਾਂਝਾ ਕਰੋ",
+    "Sharing" : "ਸਾਂਝ",
     "Password" : "ਪਾਸਵਰ",
     "Download" : "ਡਾਊਨਲੋਡ"
 },

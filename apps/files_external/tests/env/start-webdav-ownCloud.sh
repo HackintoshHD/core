@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # ownCloud
 #
@@ -12,7 +12,7 @@
 # Set environment variable DEBUG to print config file
 #
 # @author Morris Jobke
-# @copyright 2014 Morris Jobke <hey@morrisjobke.de>
+# @copyright Copyright (c) 2014 Morris Jobke <hey@morrisjobke.de>
 #
 
 if ! command -v docker >/dev/null 2>&1; then
@@ -26,7 +26,11 @@ echo "Fetch recent morrisjobke/owncloud docker image"
 docker pull morrisjobke/owncloud
 
 # retrieve current folder to place the config in the parent folder
-thisFolder=`echo $0 | replace "env/start-webdav-ownCloud.sh" ""`
+thisFolder=`echo $0 | sed 's#env/start-webdav-ownCloud\.sh##'`
+
+if [ -z "$thisFolder" ]; then
+    thisFolder="."
+fi;
 
 if [ -n "$RUN_DOCKER_MYSQL" ]; then
     echo "Fetch recent mysql docker image"
@@ -42,20 +46,23 @@ fi
 
 container=`docker run -P $parameter -d -e ADMINLOGIN=test -e ADMINPWD=test morrisjobke/owncloud`
 
-# TODO find a way to determine the successful initialization inside the docker container
-echo "Waiting 30 seconds for ownCloud initialization ... "
-sleep 30
+host=`docker inspect --format="{{.NetworkSettings.IPAddress}}" $container`
 
-# get mapped port on host for internal port 80 - output is IP:PORT - we need to extract the port with 'cut'
-port=`docker port $container 80 | cut -f 2 -d :`
+echo -n "Waiting for ownCloud initialization"
+if ! "$thisFolder"/env/wait-for-connection ${host} 80 60; then
+    echo "[ERROR] Waited 60 seconds, no response" >&2
+    exit 1
+fi
 
+# wait at least 5 more seconds - sometimes the webserver still needs some additional time
+sleep 5
 
 cat > $thisFolder/config.webdav.php <<DELIM
 <?php
 
 return array(
     'run'=>true,
-    'host'=>'localhost:$port/owncloud/remote.php/webdav/',
+    'host'=>'${host}:80/owncloud/remote.php/webdav/',
     'user'=>'test',
     'password'=>'test',
     'root'=>'',
@@ -78,5 +85,6 @@ if [ -n "$databaseContainer" ]; then
 fi
 
 if [ -n "$DEBUG" ]; then
-    echo $thisFolder/config.webdav.php
+    cat $thisFolder/config.webdav.php
+    cat $thisFolder/dockerContainerOwnCloud.$EXECUTOR_NUMBER.webdav
 fi

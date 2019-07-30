@@ -1,22 +1,26 @@
 OC.L10N.register(
     "settings",
     {
-    "Invalid request" : "غلط درخواست",
     "Email sent" : "ارسال شدہ ای میل ",
+    "Invalid request" : "غلط درخواست",
+    "Delete" : "حذف کریں",
     "Very weak password" : "بہت کمزور پاسورڈ",
     "Weak password" : "کمزور پاسورڈ",
     "So-so password" : "نص نص پاسورڈ",
     "Good password" : "اچھا پاسورڈ",
     "Strong password" : "مضبوط پاسورڈ",
-    "Delete" : "حذف کریں",
-    "Security Warning" : "حفاظتی انتباہ",
-    "More" : "مزید",
-    "Less" : "کم",
     "Cheers!" : "واہ!",
+    "Cancel" : "منسوخ کریں",
     "Password" : "پاسورڈ",
     "New password" : "نیا پاسورڈ",
-    "Cancel" : "منسوخ کریں",
+    "Name" : "اسم",
     "Username" : "یوزر نیم",
-    "Other" : "دیگر"
+    "Personal" : "شخصی",
+    "Admin" : "ایڈمن",
+    "Error" : "خرابی",
+    "Group" : "گروپ",
+    "Other" : "دیگر",
+    "Share" : "اشتراک",
+    "Add" : "شامل کریں"
 },
 "nplurals=2; plural=(n != 1);");

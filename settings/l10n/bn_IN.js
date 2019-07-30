@@ -3,9 +3,11 @@ OC.L10N.register(
     {
     "Saved" : "সংরক্ষিত",
     "Delete" : "মুছে ফেলা",
-    "by" : "দ্বারা",
     "Get the apps to sync your files" : "আপনার ফাইল সিঙ্ক করার অ্যাপ পান",
     "Cancel" : "বাতিল করা",
-    "Username" : "ইউজারনেম"
+    "Name" : "নাম",
+    "Error" : "ভুল",
+    "Share" : "শেয়ার",
+    "Add" : "যোগ করা"
 },
 "nplurals=2; plural=(n != 1);");

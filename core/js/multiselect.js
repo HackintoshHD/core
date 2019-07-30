@@ -32,7 +32,7 @@
 			'onuncheck':false,
 			'minWidth': 'default;'
 		};
-		var slideDuration = 200;
+		var slideDuration = 0;
 		$(this).attr('data-msid', multiSelectId);
 		$.extend(settings,options);
 		$.each(this.children(),function(i,option) {
@@ -53,7 +53,7 @@
 				settings.labels.push($(option).text().trim());
 			}
 		});
-		var button=$('<div class="multiselect button"><span>'+settings.title+'</span><span>▾</span></div>');
+		var button=$('<div class="multiselect button"><span>'+settings.title+'</span><span class="icon-triangle-s"></span></div>');
 		var span=$('<span/>');
 		span.append(button);
 		button.data('id',multiSelectId);
@@ -75,29 +75,48 @@
 
 		var self = this;
 		self.menuDirection = 'down';
+
+		function closeDropDown() {
+			if(!button.parent().data('preventHide')) {
+				// How can I save the effect in a var?
+				if(self.menuDirection === 'down') {
+					button.parent().children('ul').slideUp(slideDuration,function() {
+						button.parent().children('ul').remove();
+						button.removeClass('active down');
+						$(self).trigger($.Event('dropdownclosed', settings));
+					});
+				} else {
+					button.parent().children('ul').fadeOut(slideDuration,function() {
+						button.parent().children('ul').remove();
+						button.removeClass('active up');
+						$(self).trigger($.Event('dropdownclosed', settings));
+					});
+				}
+			}
+		}
+
 		button.click(function(event){
-			
+
 			var button=$(this);
 			if(button.parent().children('ul').length>0) {
 				if(self.menuDirection === 'down') {
 					button.parent().children('ul').slideUp(slideDuration,function() {
 						button.parent().children('ul').remove();
 						button.removeClass('active down');
+						$(self).trigger($.Event('dropdownclosed', settings));
 					});
 				} else {
 					button.parent().children('ul').fadeOut(slideDuration,function() {
 						button.parent().children('ul').remove();
 						button.removeClass('active up');
+						$(self).trigger($.Event('dropdownclosed', settings));
 					});
 				}
 				return;
 			}
+			// tell other lists to shut themselves
 			var lists=$('ul.multiselectoptions');
-			lists.slideUp(slideDuration,function(){
-				lists.remove();
-				$('div.multiselect').removeClass('active');
-				button.addClass('active');
-			});
+			lists.trigger($.Event('shut'));
 			button.addClass('active');
 			event.stopPropagation();
 			var options=$(this).parent().next().children();
@@ -109,14 +128,18 @@
 				var id='ms'+multiSelectId+'-option-'+item;
 				var input=$('<input type="' + inputType + '"/>');
 				input.attr('id',id);
+				if(inputType === 'checkbox') {
+					input.addClass('checkbox');
+				}
 				if(settings.singleSelect) {
 					input.attr('name', 'ms'+multiSelectId+'-option');
 				}
 				var label=$('<label/>');
-				label.attr('for',id);
+				label.attr('for', id);
 				label.text(element.text() || item);
+				label.attr('title', element.text() || item);
 				if(settings.checked.indexOf(item) !== -1 || checked) {
-					input.attr('checked', true);
+					input.prop('checked', true);
 				}
 				if(checked){
 					if(settings.singleSelect) {
@@ -141,7 +164,7 @@
 						element.attr('selected','selected');
 						if(typeof settings.oncheck === 'function') {
 							if(settings.oncheck(value)===false) {
-								$(this).attr('checked', false);
+								$(this).prop('checked', false);
 								return;
 							}
 						}
@@ -153,7 +176,7 @@
 						element.attr('selected',null);
 						if(typeof settings.onuncheck === 'function') {
 							if(settings.onuncheck(value)===false) {
-								$(this).attr('checked',true);
+								$(this).prop('checked',true);
 								return;
 							}
 						}
@@ -190,7 +213,8 @@
 			});
 			button.parent().data('preventHide',false);
 			if(settings.createText){
-				var li=$('<li class="creator">+ '+settings.createText+'</li>');
+				var li=$('<li class="creator" title="' + settings.createText +
+					'">+ ' + settings.createText + '</li>');
 				li.click(function(event){
 					li.empty();
 					var input=$('<input type="text" class="new">');
@@ -207,6 +231,7 @@
 							$.each(options,function(index, item) {
 								if ($(item).val() == value || $(item).text() == value) {
 									exists = true;
+									OC.Notification.showTemporary(t('settings', "Error adding {addItem}: {addItem} already exists", {addItem: value}));
 									return false;
 								}
 							});
@@ -258,7 +283,7 @@
 				});
 				list.append(li);
 			}
-			
+
 			var doSort = function(list, selector) {
 				var rows = list.find('li'+selector).get();
 
@@ -299,35 +324,22 @@
 					top:pos.top - list.height(),
 					left:pos.left,
 					width:(button.outerWidth()-2)+'px'
-					
+
 				});
 				list.detach().insertBefore($(this));
 				list.addClass('up');
 				button.addClass('up');
-				list.fadeIn();
+				list.show();
 				self.menuDirection = 'up';
 			}
 			list.click(function(event) {
 				event.stopPropagation();
 			});
+			list.one('shut', closeDropDown);
 		});
-		$(window).click(function() {
-			if(!button.parent().data('preventHide')) {
-				// How can I save the effect in a var?
-				if(self.menuDirection === 'down') {
-					button.parent().children('ul').slideUp(slideDuration,function() {
-						button.parent().children('ul').remove();
-						button.removeClass('active down');
-					});
-				} else {
-					button.parent().children('ul').fadeOut(slideDuration,function() {
-						button.parent().children('ul').remove();
-						button.removeClass('active up');
-					});
-				}
-			}
-		});
-		
+
+		$(window).click(closeDropDown);
+
 		return span;
 	};
 })( jQuery );

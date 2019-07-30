@@ -59,18 +59,18 @@
 				return;
 			}
 			if (response.data !== undefined && response.data.uploadMaxFilesize !== undefined) {
-				$('#max_upload').val(response.data.uploadMaxFilesize);
 				$('#free_space').val(response.data.freeSpace);
-				$('#upload.button').attr('original-title', response.data.maxHumanFilesize);
+				$('#upload.button').attr('data-original-title', response.data.maxHumanFilesize);
 				$('#usedSpacePercent').val(response.data.usedSpacePercent);
+				$('#owner').val(response.data.owner);
+				$('#ownerDisplayName').val(response.data.ownerDisplayName);
 				Files.displayStorageWarnings();
 			}
 			if (response[0] === undefined) {
 				return;
 			}
 			if (response[0].uploadMaxFilesize !== undefined) {
-				$('#max_upload').val(response[0].uploadMaxFilesize);
-				$('#upload.button').attr('original-title', response[0].maxHumanFilesize);
+				$('#upload.button').attr('data-original-title', response[0].maxHumanFilesize);
 				$('#usedSpacePercent').val(response[0].usedSpacePercent);
 				Files.displayStorageWarnings();
 			}
@@ -101,15 +101,12 @@
 				throw t('files', '"{name}" is an invalid file name.', {name: name});
 			} else if (trimmedName.length === 0) {
 				throw t('files', 'File name cannot be empty.');
+			} else if (trimmedName.indexOf("/") >= 0) {
+				throw t('files', 'File name cannot contain "/".');
+			} else if (OC.fileIsBlacklisted(trimmedName)) {
+				throw t('files', '"{name}" has a forbidden file type/extension.', {name: name});
 			}
-			// check for invalid characters
-			var invalidCharacters =
-				['\\', '/', '<', '>', ':', '"', '|', '?', '*', '\n'];
-			for (var i = 0; i < invalidCharacters.length; i++) {
-				if (trimmedName.indexOf(invalidCharacters[i]) !== -1) {
-					throw t('files', "Invalid name, '\\', '/', '<', '>', ':', '\"', '|', '?' and '*' are not allowed.");
-				}
-			}
+
 			return true;
 		},
 		displayStorageWarnings: function() {
@@ -117,48 +114,70 @@
 				return;
 			}
 
-			var usedSpacePercent = $('#usedSpacePercent').val();
+			var currentUser = OC.getCurrentUser().uid;
+			var usedSpacePercent = $('#usedSpacePercent').val(),
+				owner = $('#owner').val(),
+				ownerDisplayName = $('#ownerDisplayName').val();
 			if (usedSpacePercent > 98) {
-				OC.Notification.show(t('files', 'Your storage is full, files can not be updated or synced anymore!'));
+				if (owner !== currentUser) {
+					OC.Notification.show(t('files', 'Storage of {owner} is full, files can not be updated or synced anymore!', 
+						{owner: ownerDisplayName}), {type: 'error'}
+					);
+					return;
+				}
+				OC.Notification.show(t('files', 
+					'Your storage is full, files can not be updated or synced anymore!'), 
+					{type : 'error'}
+				);
 				return;
 			}
 			if (usedSpacePercent > 90) {
+				if (owner !== currentUser) {
+					OC.Notification.show(t('files', 'Storage of {owner} is almost full ({usedSpacePercent}%)', 
+						{
+							usedSpacePercent: usedSpacePercent,  
+							owner: ownerDisplayName
+						}),
+						{  
+							type: 'error'
+						}
+					);
+					return;
+				}
 				OC.Notification.show(t('files', 'Your storage is almost full ({usedSpacePercent}%)',
-					{usedSpacePercent: usedSpacePercent}));
-			}
-		},
-
-		displayEncryptionWarning: function() {
-
-			if (!OC.Notification.isHidden()) {
-				return;
-			}
-
-			var encryptedFiles = $('#encryptedFiles').val();
-			var initStatus = $('#encryptionInitStatus').val();
-			if (initStatus === '0') { // enc not initialized, but should be
-				OC.Notification.show(t('files', 'Encryption App is enabled but your keys are not initialized, please log-out and log-in again'));
-				return;
-			}
-			if (initStatus === '1') { // encryption tried to init but failed
-				OC.Notification.show(t('files', 'Invalid private key for Encryption App. Please update your private key password in your personal settings to recover access to your encrypted files.'));
-				return;
-			}
-			if (encryptedFiles === '1') {
-				OC.Notification.show(t('files', 'Encryption was disabled but your files are still encrypted. Please go to your personal settings to decrypt your files.'));
-				return;
+					{usedSpacePercent: usedSpacePercent}), 
+					{type : 'error'}
+				);
 			}
 		},
 
 		/**
 		 * Returns the download URL of the given file(s)
-		 * @param filename string or array of file names to download
-		 * @param dir optional directory in which the file name is, defaults to the current directory
+		 * @param {string} filename string or array of file names to download
+		 * @param {string} [dir] optional directory in which the file name is, defaults to the current directory
+		 * @param {bool} [isDir=false] whether the given filename is a directory and might need a special URL
 		 */
-		getDownloadUrl: function(filename, dir) {
-			if ($.isArray(filename)) {
-				filename = JSON.stringify(filename);
+		getDownloadUrl: function(filename, dir, isDir) {
+			if (!_.isArray(filename) && !isDir) {
+				var pathSections = dir.split('/');
+				pathSections.push(filename);
+				var encodedPath = '';
+				_.each(pathSections, function(section) {
+					if (section !== '') {
+						encodedPath += '/' + encodeURIComponent(section);
+					}
+				});
+				return OC.linkToRemoteBase('webdav') + encodedPath;
 			}
+
+			if (_.isArray(filename)) {
+				var filesPart = '';
+				_.each(filename, function(name) {
+					filesPart += '&files[]=' + encodeURIComponent(name);
+				});
+				return this.getAjaxUrl('download', {dir: dir}) + filesPart;
+			}
+
 			var params = {
 				dir: dir,
 				files: filename
@@ -179,18 +198,14 @@
 			return OC.filePath('files', 'ajax', action + '.php') + q;
 		},
 
+		/**
+		 * Fetch the icon url for the mimetype
+		 * @param {string} mime The mimetype
+		 * @param {Files~mimeicon} ready Function to call when mimetype is retrieved
+		 * @deprecated use OC.MimeType.getIconUrl(mime)
+		 */
 		getMimeIcon: function(mime, ready) {
-			if (Files.getMimeIcon.cache[mime]) {
-				ready(Files.getMimeIcon.cache[mime]);
-			} else {
-				$.get( OC.filePath('files','ajax','mimeicon.php'), {mime: mime}, function(path) {
-					if(OC.Util.hasSVGSupport()){
-						path = path.substr(0, path.length-4) + '.svg';
-					}
-					Files.getMimeIcon.cache[mime]=path;
-					ready(Files.getMimeIcon.cache[mime]);
-				});
-			}
+			ready(OC.MimeType.getIconUrl(mime));
 		},
 
 		/**
@@ -213,7 +228,7 @@
 		 */
 		lazyLoadPreview : function(path, mime, ready, width, height, etag) {
 			console.warn('DEPRECATED: please use lazyLoadPreview() from an OCA.Files.FileList instance');
-			return OCA.Files.App.fileList.lazyLoadPreview({
+			return FileList.lazyLoadPreview({
 				path: path,
 				mime: mime,
 				callback: ready,
@@ -227,23 +242,10 @@
 		 * Initialize the files view
 		 */
 		initialize: function() {
-			Files.getMimeIcon.cache = {};
-			Files.displayEncryptionWarning();
 			Files.bindKeyboardShortcuts(document, $);
 
 			// TODO: move file list related code (upload) to OCA.Files.FileList
 			$('#file_action_panel').attr('activeAction', false);
-
-			// Triggers invisible file input
-			$('#upload a').on('click', function() {
-				$(this).parent().children('#file_upload_start').trigger('click');
-				return false;
-			});
-
-			// Trigger cancelling of file upload
-			$('#uploadprogresswrapper .stop').on('click', function() {
-				OC.Upload.cancelUploads();
-			});
 
 			// drag&drop support using jquery.fileupload
 			// TODO use OC.dialogs
@@ -251,12 +253,8 @@
 					e.preventDefault(); // prevent browser from doing anything, if file isn't dropped in dropZone
 				});
 
-			//do a background scan if needed
-			scanFiles();
-
 			// display storage warnings
 			setTimeout(Files.displayStorageWarnings, 100);
-			OC.Notification.setDefault(Files.displayStorageWarnings);
 
 			// only possible at the moment if user is logged in or the files app is loaded
 			if (OC.currentUser && OCA.Files.App) {
@@ -269,12 +267,12 @@
 				// Use jquery-visibility to de-/re-activate file stats sync
 				if ($.support.pageVisibility) {
 					$(document).on({
-						'show.visibility': function() {
+						'show': function() {
 							if (!updateStorageStatisticsIntervalId) {
 								updateStorageStatisticsIntervalId = setInterval(func, updateStorageStatisticsInterval);
 							}
 						},
-						'hide.visibility': function() {
+						'hide': function() {
 							clearInterval(updateStorageStatisticsIntervalId);
 							updateStorageStatisticsIntervalId = 0;
 						}
@@ -283,9 +281,12 @@
 			}
 
 
-			$('#webdavurl').on('click', function () {
-				$('#webdavurl').select();
+			$('#webdavurl').on('click touchstart', function () {
+				this.focus();
+				this.setSelectionRange(0, this.value.length);
 			});
+
+			$('#upload').tooltip({placement:'right'});
 
 			//FIXME scroll to and highlight preselected file
 			/*
@@ -293,63 +294,55 @@
 				FileList.scrollTo(getURLParameter('scrollto'));
 			}
 			*/
+		},
+
+		/**
+		 * Handles the download and calls the callback function once the download has started
+		 * - browser sends download request and adds parameter with a token
+		 * - server notices this token and adds a set cookie to the download response
+		 * - browser now adds this cookie for the domain
+		 * - JS periodically checks for this cookie and then knows when the download has started to call the callback
+		 *
+		 * @param {string} url download URL
+		 * @param {function} callback function to call once the download has started
+		 */
+		handleDownload: function(url, callback) {
+			var randomToken = Math.random().toString(36).substring(2),
+				checkForDownloadCookie = function() {
+					// Successfull request should return cookie with token, failed with -1
+					if (OC.Util.isCookieSetToValue('ocDownloadStarted', randomToken) ||
+						OC.Util.isCookieSetToValue('ocDownloadStarted', '-1')) {
+						callback();
+						return true;
+					}
+
+					return false
+				};
+
+			if (url.indexOf('?') >= 0) {
+				url += '&';
+			} else {
+				url += '?';
+			}
+			OC.redirect(url + 'downloadStartSecret=' + randomToken);
+			OC.Util.waitFor(checkForDownloadCookie, 500);
 		}
-	}
+	};
 
 	Files._updateStorageStatisticsDebounced = _.debounce(Files._updateStorageStatistics, 250);
 	OCA.Files.Files = Files;
 })();
 
-function scanFiles(force, dir, users) {
-	if (!OC.currentUser) {
-		return;
-	}
-
-	if (!dir) {
-		dir = '';
-	}
-	force = !!force; //cast to bool
-	scanFiles.scanning = true;
-	var scannerEventSource;
-	if (users) {
-		var usersString;
-		if (users === 'all') {
-			usersString = users;
-		} else {
-			usersString = JSON.stringify(users);
-		}
-		scannerEventSource = new OC.EventSource(OC.filePath('files','ajax','scan.php'),{force: force,dir: dir, users: usersString});
-	} else {
-		scannerEventSource = new OC.EventSource(OC.filePath('files','ajax','scan.php'),{force: force,dir: dir});
-	}
-	scanFiles.cancel = scannerEventSource.close.bind(scannerEventSource);
-	scannerEventSource.listen('count',function(count) {
-		console.log(count + ' files scanned');
-	});
-	scannerEventSource.listen('folder',function(path) {
-		console.log('now scanning ' + path);
-	});
-	scannerEventSource.listen('done',function(count) {
-		scanFiles.scanning=false;
-		console.log('done after ' + count + ' files');
-		if (OCA.Files.App) {
-			OCA.Files.App.fileList.updateStorageStatistics(true);
-		}
-	});
-	scannerEventSource.listen('user',function(user) {
-		console.log('scanning files for ' + user);
-	});
-}
-scanFiles.scanning=false;
-
 // TODO: move to FileList
 var createDragShadow = function(event) {
+	// FIXME: inject file list instance somehow
+	/* global FileList, Files */
+
 	//select dragged file
-	var FileList = OCA.Files.App.fileList;
 	var isDragSelected = $(event.target).parents('tr').find('td input:first').prop('checked');
 	if (!isDragSelected) {
 		//select dragged file
-		FileList._selectFileEl($(event.target).parents('tr:first'), true);
+		FileList._selectFileEl($(event.target).parents('tr:first'), true, false);
 	}
 
 	// do not show drag shadow for too many files
@@ -358,7 +351,7 @@ var createDragShadow = function(event) {
 
 	if (!isDragSelected && selectedFiles.length === 1) {
 		//revert the selection
-		FileList._selectFileEl($(event.target).parents('tr:first'), false);
+		FileList._selectFileEl($(event.target).parents('tr:first'), false, false);
 	}
 
 	// build dragshadow
@@ -382,7 +375,7 @@ var createDragShadow = function(event) {
 				.css('background-image', 'url(' + OC.imagePath('core', 'filetypes/folder.png') + ')');
 		} else {
 			var path = dir + '/' + elem.name;
-			OCA.Files.App.files.lazyLoadPreview(path, elem.mime, function(previewpath) {
+			Files.lazyLoadPreview(path, elem.mimetype, function(previewpath) {
 				newtr.find('td.filename')
 					.css('background-image', 'url(' + previewpath + ')');
 			}, null, null, elem.etag);
@@ -404,24 +397,49 @@ var dragOptions={
 	cursorAt: { left: 24, top: 18 },
 	helper: createDragShadow,
 	cursor: 'move',
+
 	start: function(event, ui){
 		var $selectedFiles = $('td.filename input:checkbox:checked');
-		if($selectedFiles.length > 1){
-			$selectedFiles.parents('tr').fadeTo(250, 0.2);
+		if (!$selectedFiles.length) {
+			$selectedFiles = $(this);
 		}
-		else{
-			$(this).fadeTo(250, 0.2);
-		}
+		$selectedFiles.closest('tr').addClass('animate-opacity dragging');
+		$selectedFiles.closest('tr').filter('.ui-droppable').droppable( 'disable' );
+
 	},
 	stop: function(event, ui) {
 		var $selectedFiles = $('td.filename input:checkbox:checked');
-		if($selectedFiles.length > 1){
-			$selectedFiles.parents('tr').fadeTo(250, 1);
+		if (!$selectedFiles.length) {
+			$selectedFiles = $(this);
 		}
-		else{
-			$(this).fadeTo(250, 1);
+
+		var $tr = $selectedFiles.closest('tr');
+		$tr.removeClass('dragging');
+		$tr.filter('.ui-droppable').droppable( 'enable' );
+
+		setTimeout(function() {
+			$tr.removeClass('animate-opacity');
+		}, 300);
+	},
+	drag: function(event, ui) {
+		var scrollingArea = FileList.$container;
+		var currentScrollTop = $(scrollingArea).scrollTop();
+		var scrollArea = Math.min(Math.floor($(window).innerHeight() / 2), 100);
+
+		var bottom = $(window).innerHeight() - scrollArea;
+		var top = $(window).scrollTop() + scrollArea;
+		if (event.pageY < top) {
+			$('html, body').animate({
+
+				scrollTop: $(scrollingArea).scrollTop(currentScrollTop - 10)
+			}, 400);
+
+		} else if (event.pageY > bottom) {
+			$('html, body').animate({
+				scrollTop: $(scrollingArea).scrollTop(currentScrollTop + 10)
+			}, 400);
 		}
-		$('#fileList tr td.filename').addClass('ui-draggable');
+
 	}
 };
 // sane browsers support using the distance option
@@ -434,7 +452,7 @@ var folderDropOptions = {
 	hoverClass: "canDrop",
 	drop: function( event, ui ) {
 		// don't allow moving a file into a selected folder
-		var FileList = OCA.Files.App.fileList;
+		/* global FileList */
 		if ($(event.target).parents('tr').find('td input:first').prop('checked') === true) {
 			return false;
 		}
@@ -449,7 +467,9 @@ var folderDropOptions = {
 		var files = FileList.getSelectedFiles();
 		if (files.length === 0) {
 			// single one selected without checkbox?
-			files = _.map(ui.helper.find('tr'), FileList.elementToFile);
+			files = _.map(ui.helper.find('tr'), function(el) {
+				return FileList.elementToFile($(el));
+			});
 		}
 
 		FileList.move(_.pluck(files, 'name'), targetPath);
@@ -464,4 +484,3 @@ function fileDownloadPath(dir, file) {
 
 // for backward compatibility
 window.Files = OCA.Files.Files;
-

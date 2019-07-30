@@ -2,17 +2,15 @@ OC.L10N.register(
     "files",
     {
     "Unknown error" : "ਅਣਜਾਣ ਗਲਤੀ",
-    "Files" : "ਫਾਇਲਾਂ",
+    "All files" : "ਸਾਰੀਆਂ ਫਾਈਲਾਂ",
+    "Close" : "ਬੰਦ",
+    "Download" : "ਡਾਊਨਲੋਡ",
     "Rename" : "ਨਾਂ ਬਦਲੋ",
     "Delete" : "ਹਟਾਓ",
-    "Download" : "ਡਾਊਨਲੋਡ",
-    "Error" : "ਗਲਤੀ",
-    "_%n folder_::_%n folders_" : ["",""],
-    "_%n file_::_%n files_" : ["",""],
-    "_Uploading %n file_::_Uploading %n files_" : ["",""],
-    "_matches '{filter}'_::_match '{filter}'_" : ["",""],
-    "Settings" : "ਸੈਟਿੰਗ",
+    "Files" : "ਫਾਇਲਾਂ",
+    "Details" : "ਵੇਰਵ",
+    "New folder" : "ਨਵਾਂ ਫੋਲਡਰ",
     "Upload" : "ਅੱਪਲੋਡ",
-    "Cancel upload" : "ਅੱਪਲੋਡ ਰੱਦ ਕਰੋ"
+    "Settings" : "ਸੈਟਿੰਗ"
 },
 "nplurals=2; plural=(n != 1);");

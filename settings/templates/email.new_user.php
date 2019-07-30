@@ -4,7 +4,7 @@
 				<tr>
 					<td bgcolor="<?php p($theme->getMailHeaderColor());?>" width="20px">&nbsp;</td>
 					<td bgcolor="<?php p($theme->getMailHeaderColor());?>">
-						<img src="<?php p(OC_Helper::makeURLAbsolute(image_path('', 'logo-mail.gif'))); ?>" alt="<?php p($theme->getName()); ?>"/>
+						<img src="<?php p(\OC::$server->getURLGenerator()->getAbsoluteURL(image_path('', 'logo-mail.gif'))); ?>" alt="<?php p($theme->getName()); ?>"/>
 					</td>
 				</tr>
 				<tr><td colspan="2">&nbsp;</td></tr>
@@ -12,7 +12,7 @@
 					<td width="20px">&nbsp;</td>
 					<td style="font-weight:normal; font-size:0.8em; line-height:1.2em; font-family:verdana,'arial',sans;">
 						<?php
-						print_unescaped($l->t('Hey there,<br><br>just letting you know that you now have an %s account.<br><br>Your username: %s<br>Access it: <a href="%s">%s</a><br><br>', array($theme->getName(), $_['username'], $_['url'], $_['url'])));
+						print_unescaped($l->t('Hey there,<br><br>just letting you know that you now have an %s account.<br><br>Your username: %s<br>Please set the password by accessing it: <a href="%s">Here</a><br><br>', [$theme->getName(), $_['username'], $_['url']]));
 
 						// TRANSLATORS term at the end of a mail
 						p($l->t('Cheers!'));

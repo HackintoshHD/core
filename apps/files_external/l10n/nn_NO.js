@@ -1,17 +1,23 @@
 OC.L10N.register(
     "files_external",
     {
-    "Location" : "Stad",
-    "Region" : "Region/fylke",
-    "Host" : "Tenar",
+    "Personal" : "Personleg",
     "Username" : "Brukarnamn",
     "Password" : "Passord",
-    "Share" : "Del",
+    "Save" : "Lagra",
+    "Port" : "Port",
+    "Region" : "Region/fylke",
+    "WebDAV" : "WebDAV",
     "URL" : "Nettstad",
-    "Personal" : "Personleg",
+    "Location" : "Stad",
+    "ownCloud" : "ownCloud",
+    "Host" : "Tenar",
+    "Root" : "Rot",
+    "Share" : "Del",
     "Name" : "Namn",
     "Folder name" : "Mappenamn",
     "Configuration" : "Innstillingar",
-    "Delete" : "Slett"
+    "Delete" : "Slett",
+    "Saved" : "Lagra"
 },
 "nplurals=2; plural=(n != 1);");

@@ -2,7 +2,7 @@
 * ownCloud
 *
 * @author Vincent Petry
-* @copyright 2014 Vincent Petry <pvince81@owncloud.com>
+* @copyright Copyright (c) 2014 Vincent Petry <pvince81@owncloud.com>
 *
 * This library is free software; you can redistribute it and/or
 * modify it under the terms of the GNU AFFERO GENERAL PUBLIC LICENSE
@@ -55,20 +55,16 @@ describe('OCA.Files.Files tests', function() {
 				'     ',
 				'.',
 				'..',
-				'back\\slash',
-				'sl/ash',
-				'lt<lt',
-				'gt>gt',
-				'col:on',
-				'double"quote',
-				'pi|pe',
-				'dont?ask?questions?',
-				'super*star',
-				'new\nline',
 				' ..',
 				'.. ',
 				'. ',
-				' .'
+				' .',
+				'/',
+				'folder/',
+				'/file',
+				'folder/file',
+				'foo.part',
+				'bar.filepart'
 			];
 			for ( var i = 0; i < fileNames.length; i++ ) {
 				var threwException = false;
@@ -86,15 +82,72 @@ describe('OCA.Files.Files tests', function() {
 	describe('getDownloadUrl', function() {
 		it('returns the ajax download URL when filename and dir specified', function() {
 			var url = Files.getDownloadUrl('test file.txt', '/subdir');
-			expect(url).toEqual(OC.webroot + '/index.php/apps/files/ajax/download.php?dir=%2Fsubdir&files=test%20file.txt');
+			expect(url).toEqual(OC.webroot + '/remote.php/webdav/subdir/test%20file.txt');
 		});
-		it('returns the ajax download URL when filename and root dir specific', function() {
+		it('returns the webdav download URL when filename and root dir specified', function() {
 			var url = Files.getDownloadUrl('test file.txt', '/');
-			expect(url).toEqual(OC.webroot + '/index.php/apps/files/ajax/download.php?dir=%2F&files=test%20file.txt');
+			expect(url).toEqual(OC.webroot + '/remote.php/webdav/test%20file.txt');
 		});
 		it('returns the ajax download URL when multiple files specified', function() {
 			var url = Files.getDownloadUrl(['test file.txt', 'abc.txt'], '/subdir');
-			expect(url).toEqual(OC.webroot + '/index.php/apps/files/ajax/download.php?dir=%2Fsubdir&files=%5B%22test%20file.txt%22%2C%22abc.txt%22%5D');
+			expect(url).toEqual(OC.webroot + '/index.php/apps/files/ajax/download.php?dir=%2Fsubdir&files[]=test%20file.txt&files[]=abc.txt');
+		});
+	});
+	describe('handleDownload', function() {
+		var redirectStub;
+		var cookieStub;
+		var clock;
+		var testUrl;
+
+		beforeEach(function() {
+			testUrl = 'http://example.com/owncloud/path/download.php';
+			redirectStub = sinon.stub(OC, 'redirect');
+			cookieStub = sinon.stub(OC.Util, 'isCookieSetToValue');
+			clock = sinon.useFakeTimers();
+		});
+		afterEach(function() {
+			redirectStub.restore();
+			cookieStub.restore();
+			clock.restore();
+		});
+
+		it('appends secret to url when no existing parameters', function() {
+			Files.handleDownload(testUrl);
+			expect(redirectStub.calledOnce).toEqual(true);
+			expect(redirectStub.getCall(0).args[0]).toContain(testUrl + '?downloadStartSecret=');
+		});
+		it('appends secret to url with existing parameters', function() {
+			Files.handleDownload(testUrl + '?test=1');
+			expect(redirectStub.calledOnce).toEqual(true);
+			expect(redirectStub.getCall(0).args[0]).toContain(testUrl + '?test=1&downloadStartSecret=');
+		});
+		it('sets cookie and calls callback when cookie appears', function() {
+			var callbackStub = sinon.stub();
+			var token;
+			Files.handleDownload(testUrl, callbackStub);
+			expect(redirectStub.calledOnce).toEqual(true);
+			token = OC.parseQueryString(redirectStub.getCall(0).args[0]).downloadStartSecret;
+			expect(token).toBeDefined();
+
+			expect(cookieStub.callCount).toEqual(2);
+			cookieStub.onCall(0).returns(false);
+			cookieStub.onCall(1).returns(false);
+			clock.tick(600);
+
+			expect(cookieStub.callCount).toEqual(4);
+			expect(cookieStub.getCall(2).args[0]).toEqual('ocDownloadStarted');
+			expect(cookieStub.getCall(2).args[1]).toEqual(token);
+			expect(cookieStub.getCall(3).args[0]).toEqual('ocDownloadStarted');
+			expect(cookieStub.getCall(3).args[1]).toEqual('-1');
+			expect(callbackStub.notCalled).toEqual(true);
+
+			// now 1 ocDownloadStarted expected, with token argument
+			// should be called and return true
+			cookieStub.returns(true);
+
+			clock.tick(2000);
+			expect(cookieStub.callCount).toEqual(5);
+			expect(callbackStub.calledOnce).toEqual(true);
 		});
 	});
 });

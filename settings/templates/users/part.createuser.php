@@ -4,25 +4,16 @@
 			placeholder="<?php p($l->t('Username'))?>"
 			autocomplete="off" autocapitalize="off" autocorrect="off" />
 		<input
-			type="password" id="newuserpassword"
+			type="password" id="newuserpassword" style="display:none"
 			placeholder="<?php p($l->t('Password'))?>"
 			autocomplete="off" autocapitalize="off" autocorrect="off" />
-		<input id="newemail" type="text" style="display:none"
+		<input id="newemail" type="text"
 			   placeholder="<?php p($l->t('E-Mail'))?>"
 			   autocomplete="off" autocapitalize="off" autocorrect="off" />
-		<select
-			class="groupsselect" id="newusergroups" data-placeholder="groups"
-			title="<?php p($l->t('Groups'))?>" multiple="multiple">
-			<?php foreach($_["adminGroup"] as $adminGroup): ?>
-				<option value="<?php p($adminGroup['name']);?>"><?php p($adminGroup['name']); ?></option>
-			<?php endforeach; ?>
-			<?php foreach($_["groups"] as $group): ?>
-				<option value="<?php p($group['name']);?>"><?php p($group['name']);?></option>
-			<?php endforeach;?>
-		</select>
+		<div class="groups"><div class="groupsListContainer multiselect button" data-placeholder="<?php p($l->t('Groups'))?>"><span class="title groupsList"></span><span class="icon-triangle-s"></span></div></div>
 		<input type="submit" class="button" value="<?php p($l->t('Create'))?>" />
 	</form>
-	<?php if((bool)$_['recoveryAdminEnabled']): ?>
+	<?php if ((bool)$_['recoveryAdminEnabled']): ?>
 	<div class="recoveryPassword">
 	<input id="recoveryPassword"
 		   type="password"
@@ -31,7 +22,4 @@
 		   alt="<?php p($l->t('Enter the recovery password in order to recover the users files during password change'))?>"/>
 	</div>
 	<?php endif; ?>
-	<form autocomplete="off" id="usersearchform">
-		<input type="text" class="input userFilter" placeholder="<?php p($l->t('Search Users')); ?>" />
-	</form>
 </div>

@@ -2,7 +2,7 @@
  * Copyright (c) 2014
  *
  * @author Vincent Petry
- * @copyright 2014 Vincent Petry <pvince81@owncloud.com>
+ * @copyright Copyright (c) 2014 Vincent Petry <pvince81@owncloud.com>
  *
  * This file is licensed under the Affero General Public License version 3
  * or later.
@@ -124,7 +124,7 @@
 			var $target = $(ev.target);
 			var itemId = $target.closest('li').attr('data-id');
 			this.setActiveItem(itemId);
-			return false;
+			ev.preventDefault();
 		}
 	};
 

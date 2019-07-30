@@ -1,0 +1,651 @@
+default:
+  autoload:
+    '': '%paths.base%/../features/bootstrap'
+  suites:
+    apiMain:
+      paths:
+        - '%paths.base%/../features/apiMain'
+      contexts:
+        - FeatureContext: &common_feature_context_params
+            baseUrl:  http://localhost:8080
+            adminUsername: admin
+            adminPassword: admin
+            regularUserPassword: 123456
+            ocPath: apps/testing/api/v1/occ
+        - AppManagementContext:
+        - CalDavContext:
+        - CardDavContext:
+        - ChecksumContext:
+        - FilesVersionsContext:
+        - OccContext:
+        - TransferOwnershipContext:
+
+    apiAuth:
+      paths:
+        - '%paths.base%/../features/apiAuth'
+      contexts:
+        - FeatureContext: *common_feature_context_params
+        - CorsContext:
+
+    apiAuthOcs:
+      paths:
+        - '%paths.base%/../features/apiAuthOcs'
+      contexts:
+        - FeatureContext: *common_feature_context_params
+
+    apiCapabilities:
+      paths:
+        - '%paths.base%/../features/apiCapabilities'
+      contexts:
+        - FeatureContext: *common_feature_context_params
+        - CapabilitiesContext:
+
+    apiComments:
+      paths:
+        - '%paths.base%/../features/apiComments'
+      contexts:
+        - FeatureContext: *common_feature_context_params
+        - CommentsContext:
+        - WebDavPropertiesContext:
+
+    apiFavorites:
+      paths:
+        - '%paths.base%/../features/apiFavorites'
+      contexts:
+        - FeatureContext: *common_feature_context_params
+        - FavoritesContext:
+        - WebDavPropertiesContext:
+
+    apiFederation:
+      paths:
+        - '%paths.base%/../features/apiFederation'
+      contexts:
+        - FeatureContext: *common_feature_context_params
+        - FederationContext:
+        - WebDavPropertiesContext:
+
+    apiProvisioning-v1:
+      paths:
+        - '%paths.base%/../features/apiProvisioning-v1'
+      contexts:
+        - FeatureContext: *common_feature_context_params
+        - OccContext:
+        - OccUsersGroupsContext:
+
+    apiProvisioning-v2:
+      paths:
+        - '%paths.base%/../features/apiProvisioning-v2'
+      contexts:
+        - FeatureContext: *common_feature_context_params
+        - OccContext:
+        - OccUsersGroupsContext:
+
+    apiProvisioningGroups-v1:
+      paths:
+        - '%paths.base%/../features/apiProvisioningGroups-v1'
+      contexts:
+        - FeatureContext: *common_feature_context_params
+        - OccContext:
+        - OccUsersGroupsContext:
+
+    apiProvisioningGroups-v2:
+      paths:
+        - '%paths.base%/../features/apiProvisioningGroups-v2'
+      contexts:
+        - FeatureContext: *common_feature_context_params
+        - OccContext:
+        - OccUsersGroupsContext:
+
+    apiSharees:
+      paths:
+        - '%paths.base%/../features/apiSharees'
+      contexts:
+        - FeatureContext: *common_feature_context_params
+        - ShareesContext:
+
+    apiShareManagement:
+      paths:
+        - '%paths.base%/../features/apiShareManagement'
+      contexts:
+        - FeatureContext: *common_feature_context_params
+        - PublicWebDavContext:
+        - TrashbinContext:
+        - WebDavPropertiesContext:
+
+    apiShareManagementBasic:
+      paths:
+        - '%paths.base%/../features/apiShareManagementBasic'
+      contexts:
+        - FeatureContext: *common_feature_context_params
+        - PublicWebDavContext:
+        - TrashbinContext:
+        - WebDavPropertiesContext:
+
+    apiShareOperations:
+      paths:
+        - '%paths.base%/../features/apiShareOperations'
+      contexts:
+        - FeatureContext: *common_feature_context_params
+        - PublicWebDavContext:
+        - TrashbinContext:
+        - WebDavPropertiesContext:
+
+    apiShareReshare:
+      paths:
+        - '%paths.base%/../features/apiShareReshare'
+      contexts:
+        - FeatureContext: *common_feature_context_params
+        - PublicWebDavContext:
+        - TrashbinContext:
+        - WebDavPropertiesContext:
+
+    apiShareUpdate:
+      paths:
+        - '%paths.base%/../features/apiShareUpdate'
+      contexts:
+        - FeatureContext: *common_feature_context_params
+        - PublicWebDavContext:
+        - TrashbinContext:
+        - WebDavPropertiesContext:
+
+    apiSharingNotifications:
+      paths:
+        - '%paths.base%/../features/apiSharingNotifications'
+      contexts:
+        - FeatureContext: *common_feature_context_params
+        - NotificationsCoreContext:
+
+    apiTags:
+      paths:
+        - '%paths.base%/../features/apiTags'
+      contexts:
+        - FeatureContext: *common_feature_context_params
+        - TagsContext:
+
+    apiTrashbin:
+      paths:
+        - '%paths.base%/../features/apiTrashbin'
+      contexts:
+        - FeatureContext: *common_feature_context_params
+        - OccContext:
+        - TrashbinContext:
+
+    apiVersions:
+      paths:
+        - '%paths.base%/../features/apiVersions'
+      contexts:
+        - FeatureContext: *common_feature_context_params
+        - ChecksumContext:
+        - FilesVersionsContext:
+
+    apiWebdavLocks:
+      paths:
+        - '%paths.base%/../features/apiWebdavLocks'
+      contexts:
+        - FeatureContext: *common_feature_context_params
+        - PublicWebDavContext:
+        - WebDavLockingContext:
+        - WebDavPropertiesContext:
+
+    apiWebdavLocks2:
+      paths:
+        - '%paths.base%/../features/apiWebdavLocks2'
+      contexts:
+        - FeatureContext: *common_feature_context_params
+        - PublicWebDavContext:
+        - WebDavLockingContext:
+        - WebDavPropertiesContext:
+
+    apiWebdavMove:
+      paths:
+        - '%paths.base%/../features/apiWebdavMove'
+      contexts:
+        - FeatureContext: *common_feature_context_params
+        - LoggingContext:
+        - WebDavPropertiesContext:
+
+    apiWebdavOperations:
+      paths:
+        - '%paths.base%/../features/apiWebdavOperations'
+      contexts:
+        - FeatureContext: *common_feature_context_params
+        - LoggingContext:
+        - SearchContext:
+        - PublicWebDavContext:
+
+    apiWebdavProperties:
+      paths:
+        - '%paths.base%/../features/apiWebdavProperties'
+      contexts:
+        - FeatureContext: *common_feature_context_params
+        - LoggingContext:
+        - WebDavPropertiesContext:
+
+    apiWebdavUpload:
+      paths:
+        - '%paths.base%/../features/apiWebdavUpload'
+      contexts:
+        - FeatureContext: *common_feature_context_params
+        - LoggingContext:
+        - PublicWebDavContext:
+
+    cliAppManagement:
+      paths:
+        - '%paths.base%/../features/cliAppManagement'
+      contexts:
+        - FeatureContext: *common_feature_context_params
+        - OccContext:
+        - AppManagementContext:
+
+    cliBackground:
+      paths:
+        - '%paths.base%/../features/cliBackground'
+      contexts:
+        - FeatureContext: *common_feature_context_params
+        - OccContext:
+
+    # This suite is part of the encryption app in later core versions
+    cliEncryption:
+      paths:
+        - '%paths.base%/../features/cliEncryption'
+      contexts:
+        - FeatureContext: *common_feature_context_params
+        - EncryptionContext:
+        - OccContext:
+        - WebDavPropertiesContext:
+
+    cliMain:
+      paths:
+        - '%paths.base%/../features/cliMain'
+      contexts:
+        - FeatureContext: *common_feature_context_params
+        - OccContext:
+        - TransferOwnershipContext:
+        - FederationContext:
+        - WebDavPropertiesContext:
+        - FilesVersionsContext:
+
+    cliProvisioning:
+      paths:
+        - '%paths.base%/../features/cliProvisioning'
+      contexts:
+        - FeatureContext: *common_feature_context_params
+        - EmailContext:
+        - OccContext:
+        - OccAppManagementContext:
+        - OccUsersGroupsContext:
+
+    cliTrashbin:
+      paths:
+        - '%paths.base%/../features/cliTrashbin'
+      contexts:
+        - FeatureContext: *common_feature_context_params
+        - OccContext:
+        - TrashbinContext:
+
+    webUIAdminSettings:
+      paths:
+        - '%paths.base%/../features/webUIAdminSettings'
+      contexts:
+        - FeatureContext: *common_feature_context_params
+        - EmailContext:
+        - CapabilitiesContext:
+        - WebUIAdminAppsSettingsContext:
+        - WebUIAdminSharingSettingsContext:
+        - WebUIAdminGeneralSettingsContext:
+        - WebUIAdminStorageSettingsContext:
+        - WebUIFilesContext:
+        - WebUIHelpAndTipsContext:
+        - WebUIGeneralContext:
+        - WebUILoginContext:
+        - OccContext:
+
+    webUIComments:
+      paths:
+        - '%paths.base%/../features/webUIComments'
+      contexts:
+        - FeatureContext: *common_feature_context_params
+        - WebUIGeneralContext:
+        - WebUILoginContext:
+        - WebUIFilesContext:
+        - WebUISharingContext:
+
+    webUICreateDelete:
+      paths:
+        - '%paths.base%/../features/webUICreateDelete'
+      contexts:
+        - FeatureContext: *common_feature_context_params
+        - TagsContext:
+        - WebUIFilesContext:
+        - WebUIGeneralContext:
+        - WebUILoginContext:
+        - WebUISharingContext:
+
+    webUIFavorites:
+      paths:
+        - '%paths.base%/../features/webUIFavorites'
+      contexts:
+        - FeatureContext: *common_feature_context_params
+        - WebUIFilesContext:
+        - WebUIGeneralContext:
+        - WebUILoginContext:
+
+    webUIFiles:
+      paths:
+        - '%paths.base%/../features/webUIFiles'
+      contexts:
+        - FeatureContext: *common_feature_context_params
+        - TagsContext:
+        - WebUIFilesContext:
+        - WebUIGeneralContext:
+        - WebUILoginContext:
+        - WebUISearchContext:
+        - WebUISharingContext:
+        - OccContext:
+        - PublicWebDavContext:
+
+    webUILogin:
+      paths:
+        - '%paths.base%/../features/webUILogin'
+      contexts:
+        - FeatureContext: *common_feature_context_params
+        - EmailContext:
+        - WebUIFilesContext:
+        - WebUIGeneralContext:
+        - WebUILoginContext:
+        - WebUIPersonalGeneralSettingsContext:
+
+    # This suite is part of the encryption app in later core versions
+    webUIMasterKeyType:
+      paths:
+        - '%paths.base%/../features/webUIMasterKeyType'
+      contexts:
+        - EncryptionContext:
+        - WebUIAdminEncryptionSettingsContext:
+        - WebUIPersonalEncryptionSettingsContext:
+        - WebUIGeneralContext:
+        - WebUILoginContext:
+        - WebUIFilesContext:
+        - FeatureContext: *common_feature_context_params
+        - OccContext:
+
+    webUIMoveFilesFolders:
+      paths:
+        - '%paths.base%/../features/webUIMoveFilesFolders'
+      contexts:
+        - FeatureContext: *common_feature_context_params
+        - WebUIFilesContext:
+        - WebUIGeneralContext:
+        - WebUILoginContext:
+        - WebUISharingContext:
+        - PublicWebDavContext:
+
+    webUIPersonalSettings:
+      paths:
+        - '%paths.base%/../features/webUIPersonalSettings'
+      contexts:
+        - FeatureContext: *common_feature_context_params
+        - EmailContext:
+        - WebUIFilesContext:
+        - WebUIGeneralContext:
+        - WebUILoginContext:
+        - WebUIPersonalGeneralSettingsContext:
+        - WebUIPersonalSecuritySettingsContext:
+        - WebUIUserContext:
+        - OccContext:
+        - OccUsersGroupsContext:
+
+    webUIRenameFiles:
+      paths:
+        - '%paths.base%/../features/webUIRenameFiles'
+      contexts:
+        - FeatureContext: *common_feature_context_params
+        - WebUIFilesContext:
+        - WebUIGeneralContext:
+        - WebUILoginContext:
+        - WebUISharingContext:
+        - PublicWebDavContext:
+
+    webUIRenameFolders:
+      paths:
+        - '%paths.base%/../features/webUIRenameFolders'
+      contexts:
+        - FeatureContext: *common_feature_context_params
+        - WebUIFilesContext:
+        - WebUIGeneralContext:
+        - WebUILoginContext:
+
+    webUIRestrictSharing:
+      paths:
+        - '%paths.base%/../features/webUIRestrictSharing'
+      contexts:
+        - FeatureContext: *common_feature_context_params
+        - WebUIFilesContext:
+        - WebUIGeneralContext:
+        - WebUILoginContext:
+        - WebUISharingContext:
+
+    webUISharingAcceptShares:
+      paths:
+        - '%paths.base%/../features/webUISharingAcceptShares'
+      contexts:
+        - FeatureContext: *common_feature_context_params
+        - WebUIFilesContext:
+        - WebUIGeneralContext:
+        - WebUILoginContext:
+        - WebUISharingContext:
+        - WebUIAdminSharingSettingsContext:
+        - WebUIPersonalSharingSettingsContext:
+
+    webUISharingAutocompletion:
+      paths:
+        - '%paths.base%/../features/webUISharingAutocompletion'
+      contexts:
+        - FeatureContext: *common_feature_context_params
+        - WebUIFilesContext:
+        - WebUIGeneralContext:
+        - WebUILoginContext:
+        - WebUISharingContext:
+        - OccContext:
+        - WebUIPersonalSharingSettingsContext:
+
+    webUISharingExternal:
+      paths:
+        - '%paths.base%/../features/webUISharingExternal'
+      contexts:
+        - FeatureContext: *common_feature_context_params
+        - EmailContext:
+        - FederationContext:
+        - WebUIFilesContext:
+        - WebUIGeneralContext:
+        - WebUILoginContext:
+        - WebUISharingContext:
+        - PublicWebDavContext:
+        - WebUIPersonalSharingSettingsContext:
+        - WebUIAdminSharingSettingsContext:
+
+    webUISharingInternalGroups:
+      paths:
+        - '%paths.base%/../features/webUISharingInternalGroups'
+      contexts:
+        - FeatureContext: *common_feature_context_params
+        - WebUIFilesContext:
+        - WebUIGeneralContext:
+        - WebUILoginContext:
+        - WebUISharingContext:
+        - EmailContext:
+        - WebUIAdminSharingSettingsContext:
+
+    webUISharingInternalUsers:
+      paths:
+        - '%paths.base%/../features/webUISharingInternalUsers'
+      contexts:
+        - FeatureContext: *common_feature_context_params
+        - WebUIFilesContext:
+        - WebUIGeneralContext:
+        - WebUILoginContext:
+        - WebUISharingContext:
+        - EmailContext:
+        - WebUIAdminSharingSettingsContext:
+        - WebUIPersonalSharingSettingsContext:
+        - OccContext:
+
+    webUISharingNotifications:
+      paths:
+        - '%paths.base%/../features/webUISharingNotifications'
+      contexts:
+        - FeatureContext: *common_feature_context_params
+        - NotificationsCoreContext:
+        - WebUIFilesContext:
+        - WebUIGeneralContext:
+        - WebUILoginContext:
+        - WebUINotificationsContext:
+        - WebUISharingContext:
+
+    webUISharingPublic:
+      paths:
+        - '%paths.base%/../features/webUISharingPublic'
+      contexts:
+        - FeatureContext: *common_feature_context_params
+        - EmailContext:
+        - PublicWebDavContext:
+        - WebUIFilesContext:
+        - WebUIGeneralContext:
+        - WebUILoginContext:
+        - WebUISharingContext:
+
+    webUITags:
+      paths:
+        - '%paths.base%/../features/webUITags'
+      contexts:
+        - FeatureContext: *common_feature_context_params
+        - TagsContext:
+        - WebUIGeneralContext:
+        - WebUILoginContext:
+        - WebUIFilesContext:
+        - WebUISharingContext:
+        - WebUITagsContext:
+
+    webUITrashbin:
+      paths:
+        - '%paths.base%/../features/webUITrashbin'
+      contexts:
+        - FeatureContext: *common_feature_context_params
+        - TrashbinContext:
+        - WebUIFilesContext:
+        - WebUIGeneralContext:
+        - WebUILoginContext:
+
+    webUIUpload:
+      paths:
+        - '%paths.base%/../features/webUIUpload'
+      contexts:
+        - FeatureContext: *common_feature_context_params
+        - WebUIFilesContext:
+        - WebUIGeneralContext:
+        - WebUILoginContext:
+        - WebUISharingContext:
+        - PublicWebDavContext:
+
+    # This suite is part of the encryption app in later core versions
+    webUIUserKeysType:
+      paths:
+        - '%paths.base%/../features/webUIUserKeysType'
+      contexts:
+        - WebUIAdminEncryptionSettingsContext:
+        - WebUIPersonalEncryptionSettingsContext:
+        - WebUIGeneralContext:
+        - WebUILoginContext:
+        - FeatureContext: *common_feature_context_params
+        - EncryptionContext:
+        - OccContext:
+        - WebDavPropertiesContext:
+
+    # This suite is part of the user_management app in later core versions
+    webUIAddUsers:
+      paths:
+        - '%paths.base%/../features/webUIAddUsers'
+      contexts:
+        - FeatureContext: *common_feature_context_params
+        - EmailContext:
+        - WebDavPropertiesContext:
+        - WebUIFilesContext:
+        - WebUIGeneralContext:
+        - WebUILoginContext:
+        - WebUIPersonalGeneralSettingsContext:
+        - WebUIUsersContext:
+        - WebUIUserContext:
+
+    # This suite is part of the user_management app in later core versions
+    webUIManageQuota:
+      paths:
+        - '%paths.base%/../features/webUIManageQuota'
+      contexts:
+        - FeatureContext: *common_feature_context_params
+        - WebDavPropertiesContext:
+        - WebUIFilesContext:
+        - WebUIGeneralContext:
+        - WebUILoginContext:
+        - WebUIUsersContext:
+
+    # This suite is part of the user_management app in later core versions
+    webUIManageUsersGroups:
+      paths:
+        - '%paths.base%/../features/webUIManageUsersGroups'
+      contexts:
+        - FeatureContext: *common_feature_context_params
+        - EmailContext:
+        - WebDavPropertiesContext:
+        - WebUIFilesContext:
+        - WebUIGeneralContext:
+        - WebUILoginContext:
+        - WebUIPersonalGeneralSettingsContext:
+        - WebUIUsersContext:
+        - WebUIUserContext:
+
+    # This suite is part of the user_management app in later core versions
+    webUISettingsMenu:
+      paths:
+        - '%paths.base%/../features/webUISettingsMenu'
+      contexts:
+        - FeatureContext: *common_feature_context_params
+        - WebDavPropertiesContext:
+        - EmailContext:
+        - WebUIFilesContext:
+        - WebUIGeneralContext:
+        - WebUILoginContext:
+        - WebUISharingContext:
+        - WebUIUsersContext:
+
+    webUIWebdavLocks:
+      paths:
+        - '%paths.base%/../features/webUIWebdavLocks'
+      contexts:
+        - FeatureContext: *common_feature_context_params
+        - WebDavLockingContext:
+        - WebUIFilesContext:
+        - WebUIGeneralContext:
+        - WebUILoginContext:
+        - WebUIWebDavLockingContext:
+        - WebUISharingContext:
+        - PublicWebDavContext:
+
+    webUIWebdavLockProtection:
+      paths:
+        - '%paths.base%/../features/webUIWebdavLockProtection'
+      contexts:
+        - FeatureContext: *common_feature_context_params
+        - WebDavLockingContext:
+        - WebUIFilesContext:
+        - WebUIGeneralContext:
+        - WebUILoginContext:
+        - WebUIWebDavLockingContext:
+        - WebUISharingContext:
+        - PublicWebDavContext:
+
+  extensions:
+    jarnaiz\JUnitFormatter\JUnitFormatterExtension:
+      filename: report.xml
+      outputDir: '%paths.base%/../output/'
+
+    rdx\behatvars\BehatVariablesExtension: ~

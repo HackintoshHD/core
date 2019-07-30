@@ -4,8 +4,9 @@ OC.L10N.register(
     "Could not revert: %s" : "Kunde inte återställa: %s",
     "Versions" : "Versioner",
     "Failed to revert {file} to revision {timestamp}." : "Kunde inte återställa {file} till revision {timestamp}.",
-    "More versions..." : "Fler versioner...",
+    "_%n byte_::_%n bytes_" : ["%n byte","%n bytes"],
+    "Restore" : "Återskapa",
     "No other versions available" : "Inga andra versioner tillgängliga",
-    "Restore" : "Återskapa"
+    "More versions..." : "Fler versioner..."
 },
 "nplurals=2; plural=(n != 1);");

@@ -10,8 +10,8 @@
 	"requiremin": "4",
 	"shipped": "true",
 	"documentation": {
-		"user": "https://docs.example.com/server/go.php?to=user-encryption",
-		"admin": "https://docs.example.com/server/go.php?to=admin-encryption"
+		"user": "user-encryption",
+		"admin": "admin-encryption"
 	},
 	"rememberlogin": "false",
 	"types": ["filesystem"],
@@ -67,5 +67,25 @@
 				"max-version": "8"
 			}
 		}
-	}
+	},
+	"repair-steps": {
+		"install": {
+			"step": "OCA\\FilesEncryption\\Migration\\Install"
+		},
+		"pre-migration": {
+			"step": "OCA\\FilesEncryption\\Migration\\PreMigration"
+		},
+		"post-migration": {
+			"step": "OCA\\FilesEncryption\\Migration\\PostMigration"
+		},
+		"live-migration": {
+			"step": "OCA\\FilesEncryption\\Migration\\LiveMigration"
+		},
+		"uninstall": {
+			"step": "OCA\\FilesEncryption\\Migration\\Uninstall"
+		}
+	},
+	"background-jobs": [],
+	"two-factor-providers": [],
+	"commands": []
 }

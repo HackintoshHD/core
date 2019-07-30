@@ -1,58 +1,63 @@
 $(document).ready(function(){
 	var params = OC.Util.History.parseUrlQuery();
 
-	// Hack to add a trusted domain
-	if (params.trustDomain) {
-		OC.dialogs.confirm(t('core', 'Are you really sure you want add "{domain}" as trusted domain?',
-				{domain: params.trustDomain}),
-			t('core', 'Add trusted domain'), function(answer) {
-				if(answer) {
-					$.ajax({
-						type: 'POST',
-						url: OC.generateUrl('settings/admin/security/trustedDomains'),
-						data: { newTrustedDomain: params.trustDomain }
-					}).done(function() {
-						window.location.replace(OC.generateUrl('settings/admin'));
-					});
-				}
-			});
-	}
-
-
 	$('#excludedGroups').each(function (index, element) {
 		OC.Settings.setupGroupsSelect($(element));
 		$(element).change(function(ev) {
 			var groups = ev.val || [];
-			if (groups.length > 0) {
-				groups = ev.val.join(','); // FIXME: make this JSON
-			} else {
-				groups = '';
-			}
+			groups = JSON.stringify(groups);
 			OC.AppConfig.setValue('core', $(this).attr('name'), groups);
 		});
 	});
 
 
 	$('#loglevel').change(function(){
-		$.post(OC.generateUrl('/settings/admin/log/level'), {level: $(this).val()},function(){
-			OC.Log.reload();
-		} );
-	});
-
-	$('#backgroundjobs input').change(function(){
-		if($(this).attr('checked')){
-			var mode = $(this).val();
-			if (mode === 'ajax' || mode === 'webcron' || mode === 'cron') {
-				OC.AppConfig.setValue('core', 'backgroundjobs_mode', mode);
-			}
-		}
+		$.post(OC.generateUrl('/settings/admin/log/level'), {level: $(this).val()});
 	});
 
 	$('#shareAPIEnabled').change(function() {
 		$('#shareAPI p:not(#enable)').toggleClass('hidden', !this.checked);
 	});
 
-	$('#shareAPI input:not(#excludedGroups)').change(function() {
+	$('#enableEncryption').change(function() {
+		$('#encryptionAPI div#EncryptionWarning').toggleClass('hidden');
+	});
+
+	$('#reallyEnableEncryption').click(function() {
+		$('#encryptionAPI div#EncryptionWarning').toggleClass('hidden');
+		$('#encryptionAPI div#EncryptionSettingsArea').toggleClass('hidden');
+		OC.AppConfig.setValue('core', 'encryption_enabled', 'yes');
+		$('#enableEncryption').attr('disabled', 'disabled');
+	});
+
+	$('#startmigration').click(function(event){
+		$(window).on('beforeunload.encryption', function(e) {
+			return t('settings', 'Migration in progress. Please wait until the migration is finished');
+		});
+		event.preventDefault();
+		$('#startmigration').prop('disabled', true);
+		OC.msg.startAction('#startmigration_msg', t('settings', 'Migration started …'));
+		$.post(OC.generateUrl('/settings/admin/startmigration'), '', function(data){
+			OC.msg.finishedAction('#startmigration_msg', data);
+			if (data['status'] === 'success') {
+				$('#encryptionAPI div#selectEncryptionModules').toggleClass('hidden');
+				$('#encryptionAPI div#migrationWarning').toggleClass('hidden');
+			} else {
+				$('#startmigration').prop('disabled', false);
+			}
+			$(window).off('beforeunload.encryption');
+
+		});
+	});
+
+	$('#shareapiExpireAfterNDays').change(function() {
+		var value = $(this).val();
+		if (isNaN(value) || (parseInt(value) <= 0) || parseInt(value).toString() !== value) {
+			$(this).val('7');
+		}
+	});
+
+	$('#shareAPI input:not(.noautosave)').change(function() {
 		var value = $(this).val();
 		if ($(this).attr('type') === 'checkbox') {
 			if (this.checked) {
@@ -73,104 +78,54 @@ $(document).ready(function(){
 		$('#setDefaultExpireDate').toggleClass('hidden', !(this.checked && $('#shareapiDefaultExpireDate')[0].checked));
 	});
 
-	$('#forcessl').change(function(){
-		$(this).val(($(this).val() !== 'true'));
-		var forceSSLForSubdomain = $('#forceSSLforSubdomainsSpan');
+	$('#allowPublicMailNotification').change(function() {
+		$("#publicMailNotificationLang").toggleClass('hidden', !this.checked);
+	});
 
-		$.post(OC.generateUrl('settings/admin/security/ssl'), {
-			enforceHTTPS: $(this).val()
-		},function(){} );
-
-		if($(this).val() === 'true') {
-			forceSSLForSubdomain.prop('disabled', false);
-			forceSSLForSubdomain.removeClass('hidden');
+	$('#shareapiPublicNotificationLang').change(function() {
+		var value = $(this).val();
+		if (value === 'owner') {
+			OC.AppConfig.deleteKey('core', $(this).attr('name'));
 		} else {
-			forceSSLForSubdomain.prop('disabled', true);
-			forceSSLForSubdomain.addClass('hidden');
+			OC.AppConfig.setValue('core', $(this).attr('name'), $(this).val());
 		}
 	});
 
-	$('#forceSSLforSubdomains').change(function(){
-		$(this).val(($(this).val() !== 'true'));
 
-		$.post(OC.generateUrl('settings/admin/security/ssl/subdomains'), {
-			forceSSLforSubdomains: $(this).val()
-		},function(){} );
-	});
-
-
-	$('#mail_smtpauth').change(function() {
-		if (!this.checked) {
-			$('#mail_credentials').addClass('hidden');
-		} else {
-			$('#mail_credentials').removeClass('hidden');
-		}
-	});
-
-	$('#mail_smtpmode').change(function() {
-		if ($(this).val() !== 'smtp') {
-			$('#setting_smtpauth').addClass('hidden');
-			$('#setting_smtphost').addClass('hidden');
-			$('#mail_smtpsecure_label').addClass('hidden');
-			$('#mail_smtpsecure').addClass('hidden');
-			$('#mail_credentials').addClass('hidden');
-		} else {
-			$('#setting_smtpauth').removeClass('hidden');
-			$('#setting_smtphost').removeClass('hidden');
-			$('#mail_smtpsecure_label').removeClass('hidden');
-			$('#mail_smtpsecure').removeClass('hidden');
-			if ($('#mail_smtpauth').attr('checked')) {
-				$('#mail_credentials').removeClass('hidden');
-			}
-		}
-	});
-
-	$('#mail_general_settings').change(function(){
-		OC.msg.startSaving('#mail_settings_msg');
-		var post = $( "#mail_general_settings" ).serialize();
-		$.post(OC.generateUrl('/settings/admin/mailsettings'), post, function(data){
-			OC.msg.finishedSaving('#mail_settings_msg', data);
-		});
-	});
-
-	$('#mail_credentials_settings_submit').click(function(){
-		OC.msg.startSaving('#mail_settings_msg');
-		var post = $( "#mail_credentials_settings" ).serialize();
-		$.post(OC.generateUrl('/settings/admin/mailsettings/credentials'), post, function(data){
-			OC.msg.finishedSaving('#mail_settings_msg', data);
-		});
-	});
-
-	$('#sendtestemail').click(function(event){
-		event.preventDefault();
-		OC.msg.startAction('#sendtestmail_msg', t('settings', 'Sending...'));
-		$.post(OC.generateUrl('/settings/admin/mailtest'), '', function(data){
-			OC.msg.finishedAction('#sendtestmail_msg', data);
-		});
+	$('#allowGroupSharing').change(function() {
+		$('#allowGroupSharing').toggleClass('hidden', !this.checked);
 	});
 
 	$('#shareapiExcludeGroups').change(function() {
 		$("#selectExcludedGroups").toggleClass('hidden', !this.checked);
 	});
 
-	// run setup checks then gather error messages
-	$.when(
-		OC.SetupChecks.checkWebDAV(),
-		OC.SetupChecks.checkSetup()
-	).then(function(check1, check2) {
-		var errors = [].concat(check1, check2);
-		var $el = $('#postsetupchecks');
-		var $errorsEl;
-		$el.find('.loading').addClass('hidden');
-		if (errors.length === 0) {
-			$el.find('.success').removeClass('hidden');
+	$('#shareApiDefaultPermissionsSection input').change(function(ev) {
+		var $el = $('#shareApiDefaultPermissions');
+		var $target = $(ev.target);
+
+		var value = $el.val();
+		if ($target.is(':checked')) {
+			value = value | $target.val();
 		} else {
-			$errorsEl = $el.find('.errors');
-			for (var i = 0; i < errors.length; i++ ) {
-				$errorsEl.append('<div class="setupwarning">' + errors[i] + '</div>');
-			}
-			$errorsEl.removeClass('hidden');
-			$el.find('.hint').removeClass('hidden');
+			value = value & ~$target.val();
 		}
+
+		// always set read permission
+		value |= OC.PERMISSION_READ;
+
+		// this will trigger the field's change event and will save it
+		$el.val(value).change();
+
+		ev.preventDefault();
+
+		return false;
+	});
+
+	var $additionalInfo = $('#coreUserAdditionalInfo');
+	$additionalInfo.val($additionalInfo.attr('data-value'));
+	$additionalInfo.change(function(ev) {
+		$(this).attr('data-value', $(this).val());
+		OC.AppConfig.setValue('core', $(this).attr('name'), $(this).val());
 	});
 });

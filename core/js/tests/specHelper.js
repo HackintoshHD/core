@@ -2,7 +2,7 @@
 * ownCloud
 *
 * @author Vincent Petry
-* @copyright 2014 Vincent Petry <pvince81@owncloud.com>
+* @copyright Copyright (c) 2014 Vincent Petry <pvince81@owncloud.com>
 *
 * This library is free software; you can redistribute it and/or
 * modify it under the terms of the GNU AFFERO GENERAL PUBLIC LICENSE
@@ -35,6 +35,24 @@ window.dayNames = [
 	'Friday',
 	'Saturday'
 ];
+window.dayNamesShort = [
+	'Sun.',
+	'Mon.',
+	'Tue.',
+	'Wed.',
+	'Thu.',
+	'Fri.',
+	'Sat.'
+];
+window.dayNamesMin = [
+	'Su',
+	'Mo',
+	'Tu',
+	'We',
+	'Th',
+	'Fr',
+	'Sa'
+];
 window.monthNames = [
 	'January',
 	'February',
@@ -49,23 +67,40 @@ window.monthNames = [
 	'November',
 	'December'
 ];
+window.monthNamesShort = [
+	'Jan.',
+	'Feb.',
+	'Mar.',
+	'Apr.',
+	'May.',
+	'Jun.',
+	'Jul.',
+	'Aug.',
+	'Sep.',
+	'Oct.',
+	'Nov.',
+	'Dec.'
+];
 window.firstDay = 0;
 
 // setup dummy webroots
 /* jshint camelcase: false */
 window.oc_debug = true;
-window.oc_webroot = location.href + '/';
+window.oc_isadmin = false;
+window.oc_webroot = '/owncloud';
 window.oc_appswebroots = {
 	"files": window.oc_webroot + '/apps/files/'
 };
 window.oc_config = {
 	session_lifetime: 600 * 1000,
-	session_keepalive: false
+	session_keepalive: false,
+	blacklist_files_regex: '\.(part|filepart)$'
 };
 window.oc_appconfig = {
 	core: {}
 };
 window.oc_defaults = {};
+window.oc_requesttoken = 'testrequesttoken';
 
 /* jshint camelcase: true */
 
@@ -82,7 +117,8 @@ window.isPhantom = /phantom/i.test(navigator.userAgent);
 // global setup for all tests
 (function setupTests() {
 	var fakeServer = null,
-		$testArea = null;
+		$testArea = null,
+		ajaxErrorStub = null;
 
 	/**
 	 * Utility functions for testing
@@ -101,6 +137,9 @@ window.isPhantom = /phantom/i.test(navigator.userAgent);
 				return url;
 			}
 			return r[1];
+		},
+		buildAbsoluteUrl: function(relativeUrl) {
+			return window.location.protocol + '//' + window.location.host + relativeUrl;
 		}
 	};
 
@@ -117,12 +156,25 @@ window.isPhantom = /phantom/i.test(navigator.userAgent);
 		// custom responses
 		window.fakeServer = fakeServer;
 
+		window.oc_requesttoken = 'testrequesttoken';
+		OC.requestToken = window.oc_requesttoken;
+
 		if (!OC.TestUtil) {
 			OC.TestUtil = TestUtil;
 		}
 
+		moment.locale('en');
+
 		// reset plugins
 		OC.Plugins._plugins = [];
+
+		// reset default Files.Client instance
+		delete OC.Files._defaultClient;
+
+		// dummy select2 (which isn't loaded during the tests)
+		$.fn.select2 = function() { return this; };
+
+		ajaxErrorStub = sinon.stub(OC, '_processAjaxError');
 	});
 
 	afterEach(function() {
@@ -131,6 +183,15 @@ window.isPhantom = /phantom/i.test(navigator.userAgent);
 		fakeServer.restore();
 
 		$testArea.remove();
+
+		delete($.fn.select2);
+
+		ajaxErrorStub.restore();
+
+		// reset pop state handlers
+		OC.Util.History._handlers = [];
+
+		$(window).off('beforeunload');
 	});
 })();
 

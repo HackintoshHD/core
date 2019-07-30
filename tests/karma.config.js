@@ -2,7 +2,7 @@
 * ownCloud
 *
 * @author Vincent Petry
-* @copyright 2014 Vincent Petry <pvince81@owncloud.com>
+* @copyright Copyright (c) 2014 Vincent Petry <pvince81@owncloud.com>
 *
 * This library is free software; you can redistribute it and/or
 * modify it under the terms of the GNU AFFERO GENERAL PUBLIC LICENSE
@@ -54,7 +54,10 @@ module.exports = function(config) {
 					'apps/files_sharing/js/app.js',
 					'apps/files_sharing/js/sharedfilelist.js',
 					'apps/files_sharing/js/share.js',
-					'apps/files_sharing/js/external.js'
+					'apps/files_sharing/js/external.js',
+					'apps/files_sharing/js/public.js',
+					'apps/files_sharing/js/sharetabview.js',
+					'apps/files_sharing/js/PublicUploadView.js'
 				],
 				testFiles: ['apps/files_sharing/tests/js/*.js']
 			},
@@ -64,16 +67,58 @@ module.exports = function(config) {
 					// only test these files, others are not ready and mess
 					// up with the global namespace/classes/state
 					'apps/files_external/js/app.js',
-					'apps/files_external/js/mountsfilelist.js'
+					'apps/files_external/js/mountsfilelist.js',
+					'apps/files_external/js/settings.js',
+					'apps/files_external/js/statusmanager.js'
 				],
 				testFiles: ['apps/files_external/tests/js/*.js']
 			},
 			{
+				name: 'files_versions',
+				srcFiles: [
+					// need to enforce loading order...
+					'apps/files_versions/js/versionmodel.js',
+					'apps/files_versions/js/versioncollection.js',
+					'apps/files_versions/js/versionstabview.js'
+				],
+				testFiles: ['apps/files_versions/tests/js/**/*.js']
+			},
+			{
+				name: 'comments',
+				srcFiles: [
+					// need to enforce loading order...
+					'apps/comments/js/app.js',
+					'apps/comments/js/commentmodel.js',
+					'apps/comments/js/commentcollection.js',
+					'apps/comments/js/commentsummarymodel.js',
+					'apps/comments/js/commentstabview.js',
+					'apps/comments/js/filesplugin.js'
+				],
+				testFiles: ['apps/comments/tests/js/**/*.js']
+			},
+			{
+				name: 'systemtags',
+				srcFiles: [
+					// need to enforce loading order...
+					'apps/systemtags/js/app.js',
+					'apps/systemtags/js/systemtagsinfoview.js',
+					'apps/systemtags/js/systemtagsfilelist.js',
+					'apps/systemtags/js/filesplugin.js'
+				],
+				testFiles: ['apps/systemtags/tests/js/**/*.js']
+			},
+			{
 				name: 'settings',
 				srcFiles: [
-					'settings/js/users/deleteHandler.js'
+					'settings/js/users/deleteHandler.js',
+					'settings/js/admin-apps.js',
+					'settings/js/setpassword.js'
 				],
-				testFiles: ['settings/tests/js/users/deleteHandlerSpec.js']
+				testFiles: [
+					'settings/tests/js/users/deleteHandlerSpec.js',
+					'settings/tests/js/apps/appSettingsSpec.js',
+					'settings/tests/js/setpasswordSpec.js'
+				]
 			}
 		];
 	}
@@ -114,9 +159,6 @@ module.exports = function(config) {
 		testCore = true;
 	}
 
-	// extra test libs
-	files.push(corePath + 'tests/lib/sinon-1.7.3.js');
-
 	// core mocks
 	files.push(corePath + 'tests/specHelper.js');
 
@@ -147,15 +189,15 @@ module.exports = function(config) {
 	// need to test the core app as well ?
 	if (testCore) {
 		// core tests
-		files.push(corePath + 'tests/specs/*.js');
+		files.push(corePath + 'tests/specs/**/*.js');
 	}
 
 	function addApp(app) {
 		// if only a string was specified, expand to structure
 		if (typeof(app) === 'string') {
 			app = {
-				srcFiles: 'apps/' + app + '/js/*.js',
-				testFiles: 'apps/' + app + '/tests/js/*.js'
+				srcFiles: 'apps/' + app + '/js/**/*.js',
+				testFiles: 'apps/' + app + '/tests/js/**/*.js'
 			};
 		}
 
@@ -188,7 +230,7 @@ module.exports = function(config) {
 		basePath: '..',
 
 		// frameworks to use
-		frameworks: ['jasmine'],
+		frameworks: ['jasmine', 'jasmine-sinon'],
 
 		// list of files / patterns to load in the browser
 		files: files,
@@ -200,9 +242,9 @@ module.exports = function(config) {
 
 		proxies: {
 			// prevent warnings for images
-			'/context.html//core/img/': 'http://localhost:9876/base/core/img/',
-			'/context.html//core/css/': 'http://localhost:9876/base/core/css/',
-			'/context.html//core/fonts/': 'http://localhost:9876/base/core/fonts/'
+			'/owncloud/core/img/': 'http://localhost:9876/base/core/img/',
+			'/owncloud/core/css/': 'http://localhost:9876/base/core/css/',
+			'/owncloud/core/fonts/': 'http://localhost:9876/base/core/fonts/'
 		},
 
 		// test results reporter to use
@@ -210,7 +252,9 @@ module.exports = function(config) {
 		reporters: ['dots', 'junit', 'coverage'],
 
 		junitReporter: {
-			outputFile: 'tests/autotest-results-js.xml'
+			outputDir: 'tests',
+			outputFile: 'autotest-results-js.xml',
+			useBrowserName: false
 		},
 
 		// web server port
@@ -219,7 +263,7 @@ module.exports = function(config) {
 		preprocessors: preprocessors,
 
 		coverageReporter: {
-			dir:'tests/karma-coverage',
+			dir:'tests/output/coverage',
 			reporters: [
 				{ type: 'html' },
 				{ type: 'cobertura' }
@@ -248,6 +292,9 @@ module.exports = function(config) {
 		browsers: ['PhantomJS'],
 
 		// If browser does not capture in given timeout [ms], kill it
+		captureTimeout: 60000,
+		browserNoActivityTimeout: 60000,
+		browserDisconnectTimeout: 30000,
 		captureTimeout: 60000,
 
 		// Continuous Integration mode

@@ -45,27 +45,6 @@ DeleteHandler.TIMEOUT_MS = 7000;
 DeleteHandler.prototype._timeout = null;
 
 /**
- * The function to be called after successfully marking the object for deletion
- * @callback markCallback
- * @param {string} oid the ID of the specific user or group
- */
-
-/**
- * The function to be called after successful delete. The id of the object will
- * be passed as argument. Unsuccessful operations will display an error using
- * OC.dialogs, no callback is fired.
- * @callback removeCallback
- * @param {string} oid the ID of the specific user or group
- */
-
-/**
- * This callback is fired after "undo" was clicked so the consumer can update
- * the web interface
- * @callback undoCallback
- * @param {string} oid the ID of the specific user or group
- */
-
-/**
  * enabled the notification system. Required for undo UI.
  *
  * @param {object} notifier Usually OC.Notification
@@ -106,18 +85,8 @@ DeleteHandler.prototype.showNotification = function() {
 		}
 		$('#notification').data(this.notificationDataID, true);
 		var msg = this.notificationMessage.replace(
-			this.notificationPlaceholder, escapeHTML(this.oidToDelete));
+			this.notificationPlaceholder, escapeHTML(decodeURIComponent(this.oidToDelete)));
 		this.notifier.showHtml(msg);
-	}
-};
-
-/**
- * hides the Undo Notification
- */
-DeleteHandler.prototype.hideNotification = function() {
-	if(this.notifier !== false) {
-		$('#notification').removeData(this.notificationDataID);
-		this.notifier.hide();
 	}
 };
 
@@ -127,39 +96,8 @@ DeleteHandler.prototype.hideNotification = function() {
  * @param {string} oid the object id
  */
 DeleteHandler.prototype.mark = function(oid) {
-	if(this.oidToDelete !== false) {
-		// passing true to avoid hiding the notification
-		// twice and causing the second notification
-		// to disappear immediately
-		this.deleteEntry(true);
-	}
 	this.oidToDelete = oid;
-	this.canceled = false;
-	this.markCallback(oid);
-	this.showNotification();
-	if (this._timeout) {
-		clearTimeout(this._timeout);
-		this._timeout = null;
-	}
-	if (DeleteHandler.TIMEOUT_MS > 0) {
-		this._timeout = window.setTimeout(
-				_.bind(this.deleteEntry, this),
-			   	DeleteHandler.TIMEOUT_MS
-		);
-	}
-};
-
-/**
- * cancels a delete operation
- */
-DeleteHandler.prototype.cancel = function() {
-	if (this._timeout) {
-		clearTimeout(this._timeout);
-		this._timeout = null;
-	}
-
-	this.canceled = true;
-	this.oidToDelete = false;
+	this.markCallback(decodeURIComponent(oid));
 };
 
 /**
@@ -172,8 +110,9 @@ DeleteHandler.prototype.cancel = function() {
  * it, defaults to false
  */
 DeleteHandler.prototype.deleteEntry = function(keepNotification) {
-	if(this.canceled || this.oidToDelete === false) {
-		return false;
+	var deferred = $.Deferred();
+	if(this.oidToDelete === false) {
+		return deferred.resolve().promise();
 	}
 
 	var dh = this;
@@ -181,29 +120,23 @@ DeleteHandler.prototype.deleteEntry = function(keepNotification) {
 		dh.hideNotification();
 	}
 
-	if (this._timeout) {
-		clearTimeout(this._timeout);
-		this._timeout = null;
-	}
-
 	var payload = {};
 	payload[dh.ajaxParamID] = dh.oidToDelete;
-	$.ajax({
+	return $.ajax({
 		type: 'DELETE',
-		url: OC.generateUrl(dh.ajaxEndpoint+'/'+this.oidToDelete),
+		url: OC.generateUrl(dh.ajaxEndpoint+'/{oid}',{oid: this.oidToDelete}),
 		// FIXME: do not use synchronous ajax calls as they block the browser !
 		async: false,
 		success: function (result) {
-			if (result.status === 'success') {
-				// Remove undo option, & remove user from table
+			// Remove undo option, & remove user from table
 
-				//TODO: following line
-				dh.removeCallback(dh.oidToDelete);
-				dh.canceled = true;
-			} else {
-				OC.dialogs.alert(result.data.message, t('settings', 'Unable to delete {objName}', {objName: dh.oidToDelete}));
-				dh.undoCallback(dh.oidToDelete);
-			}
+			//TODO: following line
+			dh.removeCallback(dh.oidToDelete);
+		},
+		error: function (jqXHR) {
+			OC.dialogs.alert(jqXHR.responseJSON.data.message, t('settings', 'Unable to delete {objName}', {objName: decodeURIComponent(dh.oidToDelete)}));
+			dh.undoCallback(dh.oidToDelete);
+
 		}
 	});
 };

@@ -19,7 +19,7 @@
 	 */
 	OCA.Sharing.showAddExternalDialog = function (share, passwordProtected, callback) {
 		var remote = share.remote;
-		var owner = share.owner;
+		var owner = share.ownerDisplayName || share.owner;
 		var name = share.name;
 		var remoteClean = (remote.substr(0, 8) === 'https://') ? remote.substr(8) : remote.substr(7);
 
@@ -28,7 +28,7 @@
 				t(
 					'files_sharing',
 					'Do you want to add the remote share {name} from {owner}@{remote}?',
-					{name: name, owner: owner, remote: remoteClean}
+					{name: name, owner: owner, remote: remoteClean}, null, {escape: false}
 				),
 				t('files_sharing','Remote share'),
 				function (result) {
@@ -41,7 +41,7 @@
 				t(
 					'files_sharing',
 					'Do you want to add the remote share {name} from {owner}@{remote}?',
-					{name: name, owner: owner, remote: remoteClean}
+					{name: name, owner: owner, remote: remoteClean}, null, {escape: false}
 				),
 				t('files_sharing','Remote share'),
 				function (result, password) {
@@ -69,9 +69,21 @@
 		filesApp: null,
 
 		attach: function(filesApp) {
+			var self = this;
 			this.filesApp = filesApp;
 			this.processIncomingShareFromUrl();
-			this.processSharesToConfirm();
+
+			if (!$('#header').find('div.notifications').length) {
+				// No notification app, display the modal
+				this.processSharesToConfirm();
+			}
+
+			$('body').on('OCA.Notification.Action', function(e) {
+				if (e.notification.app === 'files_sharing' && e.notification.object_type === 'remote_share' && e.action.type === 'POST') {
+					// User accepted a remote share reload
+					self.filesApp.fileList.reload();
+				}
+			});
 		},
 
 		/**
@@ -92,10 +104,11 @@
 							remote: share.remote,
 							token: share.token,
 							owner: share.owner,
+							ownerDisplayName: share.ownerDisplayName || share.owner,
 							name: share.name,
 							password: password}, function(result) {
 							if (result.status === 'error') {
-								OC.Notification.show(result.data.message);
+								OC.Notification.show(t('files_sharing', result.data.message), {type: 'error'});
 							} else {
 								fileList.reload();
 							}
@@ -131,8 +144,10 @@
 							function(result, share) {
 								if (result) {
 									// Accept
-									$.post(OC.generateUrl('/apps/files_sharing/api/externalShares'), {id: share.id});
-									fileList.reload();
+									$.post(OC.generateUrl('/apps/files_sharing/api/externalShares'), {id: share.id})
+										.then(function() {
+											fileList.reload();
+										});
 								} else {
 									// Delete
 									$.ajax({
@@ -151,4 +166,3 @@
 })();
 
 OC.Plugins.register('OCA.Files.App', OCA.Sharing.ExternalShareDialogPlugin);
-

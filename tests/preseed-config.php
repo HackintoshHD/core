@@ -1,23 +1,19 @@
 <?php
-$CONFIG = array (
-	"appstoreenabled" => false,
-	'apps_paths' =>
-		array (
-			0 =>
-				array (
-					'path' => OC::$SERVERROOT.'/apps',
-					'url' => '/apps',
-					'writable' => true,
-				),
-			1 =>
-				array (
-					'path' => OC::$SERVERROOT.'/apps2',
-					'url' => '/apps2',
-					'writable' => false,
-				)
-		),
-);
+$CONFIG = [
+	'apps_paths' => [
+		[
+			'path'		=> OC::$SERVERROOT . '/apps',
+			'url'		=> '/apps',
+			'writable'	=> true,
+		],
+	],
+	'default_language' => 'en',
+];
 
-if(substr(strtolower(PHP_OS), 0, 3) == "win") {
-	$CONFIG['openssl'] = array( 'config' => OC::$SERVERROOT.'/tests/data/openssl.cnf');
+if (\is_dir(OC::$SERVERROOT.'/apps2')) {
+	$CONFIG['apps_paths'][] = [
+		'path' => OC::$SERVERROOT . '/apps2',
+		'url' => '/apps2',
+		'writable' => false,
+	];
 }

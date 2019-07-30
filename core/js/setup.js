@@ -4,11 +4,12 @@ $(document).ready(function() {
 		sqlite:!!$('#hasSQLite').val(),
 		mysql:!!$('#hasMySQL').val(),
 		postgresql:!!$('#hasPostgreSQL').val(),
-		oracle:!!$('#hasOracle').val(),
-		mssql:!!$('#hasMSSQL').val()
+		oracle:!!$('#hasOracle').val()
 	};
 
 	$('#selectDbType').buttonset();
+	// change links inside an info box back to their default appearance
+	$('#selectDbType p.info a').button('destroy');
 
 	if($('#hasSQLite').val()){
 		$('#use_other_db').hide();
@@ -26,7 +27,7 @@ $(document).ready(function() {
 		$('#dbname').attr('pattern','[0-9a-zA-Z$_-]+');
 	});
 
-	$('#mysql,#pgsql,#mssql').click(function() {
+	$('#mysql,#pgsql').click(function() {
 		$('#use_other_db').slideDown(250);
 		$('#use_oracle_db').slideUp(250);
 		$('#sqliteInformation').hide();
@@ -42,7 +43,8 @@ $(document).ready(function() {
 
 	$('input[checked]').trigger('click');
 
-	$('#showAdvanced').click(function() {
+	$('#showAdvanced').click(function(e) {
+		e.preventDefault();
 		$('#datadirContent').slideToggle(250);
 		$('#databaseBackend').slideToggle(250);
 		$('#databaseField').slideToggle(250);
@@ -51,10 +53,16 @@ $(document).ready(function() {
 		// Save form parameters
 		var post = $(this).serializeArray();
 
+		// Show spinner while finishing setup
+		$('.float-spinner').show(250);
+
 		// Disable inputs
 		$(':submit', this).attr('disabled','disabled').val($(':submit', this).data('finishing'));
 		$('input', this).addClass('ui-state-disabled').attr('disabled','disabled');
-		$('#selectDbType').buttonset('disable');
+		// only disable buttons if they are present
+		if($('#selectDbType').find('.ui-button').length > 0) {
+			$('#selectDbType').buttonset('disable');
+		}
 		$('.strengthify-wrapper, .tipsy')
 			.css('-ms-filter', '"progid:DXImageTransform.Microsoft.Alpha(Opacity=30)"')
 			.css('filter', 'alpha(opacity=30)')
@@ -91,17 +99,19 @@ $(document).ready(function() {
 		$('#datadirContent').hide(250);
 		$('#databaseBackend').hide(250);
 		$('#databaseField').hide(250);
+		$('.float-spinner').hide(250);
 	}
 
 	$('#adminpass').strengthify({
-		zxcvbn: OC.linkTo('core','vendor/zxcvbn/zxcvbn.js'),
+		zxcvbn: OC.linkTo('core','vendor/zxcvbn/dist/zxcvbn.js'),
 		titles: [
 			t('core', 'Very weak password'),
 			t('core', 'Weak password'),
 			t('core', 'So-so password'),
 			t('core', 'Good password'),
 			t('core', 'Strong password')
-		]
+		],
+		drawTitles: true
 	});
 
 	// centers the database chooser if it is too wide

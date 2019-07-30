@@ -7,7 +7,6 @@
  * See the COPYING-README file.
  *
  */
-
 describe('OC.L10N tests', function() {
 	var TEST_APP = 'jsunittestapp';
 
@@ -25,7 +24,7 @@ describe('OC.L10N tests', function() {
 				'Hello world!': 'Hallo Welt!',
 				'Hello {name}, the weather is {weather}': 'Hallo {name}, das Wetter ist {weather}',
 				'sunny': 'sonnig'
-			});
+			}, 'nplurals=2; plural=(n != 1);');
 		});
 		it('returns untranslated text when no bundle exists', function() {
 			delete OC.L10N._bundles[TEST_APP];
@@ -52,8 +51,25 @@ describe('OC.L10N tests', function() {
 				t(TEST_APP, 'Hello {name}', {name: '<strong>Steve</strong>'}, null, {escape: false})
 			).toEqual('Hello <strong>Steve</strong>');
 		});
+		it('keeps old texts when registering existing bundle', function() {
+			OC.L10N.register(TEST_APP, {
+				'sunny': 'sonnig',
+				'new': 'neu'
+			}, 'nplurals=2; plural=(n != 1);');
+			expect(t(TEST_APP, 'sunny')).toEqual('sonnig');
+			expect(t(TEST_APP, 'new')).toEqual('neu');
+		});
 	});
 	describe('plurals', function() {
+		var warnStub;
+
+		beforeEach(function() {
+			warnStub = sinon.stub(console, 'warn');
+		});
+		afterEach(function() { 
+			warnStub.restore(); 
+		});
+	
 		function checkPlurals() {
 			expect(
 				n(TEST_APP, 'download %n file', 'download %n files', 0)
@@ -72,6 +88,7 @@ describe('OC.L10N tests', function() {
 		it('generates plural for default text when translation does not exist', function() {
 			OC.L10N.register(TEST_APP, {
 			});
+			expect(warnStub.called).toEqual(true);
 			expect(
 				n(TEST_APP, 'download %n file', 'download %n files', 0)
 			).toEqual('download 0 files');
@@ -90,6 +107,7 @@ describe('OC.L10N tests', function() {
 				'_download %n file_::_download %n files_':
 					['%n Datei herunterladen', '%n Dateien herunterladen']
 			});
+			expect(warnStub.called).toEqual(true);
 			checkPlurals();
 		});
 		it('generates plural with generated function when forms is specified', function() {
@@ -97,6 +115,7 @@ describe('OC.L10N tests', function() {
 				'_download %n file_::_download %n files_':
 					['%n Datei herunterladen', '%n Dateien herunterladen']
 			}, 'nplurals=2; plural=(n != 1);');
+			expect(warnStub.notCalled).toEqual(true);
 			checkPlurals();
 		});
 		it('generates plural with function when forms is specified as function', function() {
@@ -109,6 +128,7 @@ describe('OC.L10N tests', function() {
 					plural: (n !== 1) ? 1 : 0
 				};
 			});
+			expect(warnStub.notCalled).toEqual(true);
 			checkPlurals();
 		});
 	});
@@ -144,7 +164,7 @@ describe('OC.L10N tests', function() {
 			var callbackStub = sinon.stub();
 			OC.L10N.register(TEST_APP, {
 				'Hello world!': 'Hallo Welt!'
-			});
+			}, 'nplurals=2; plural=(n != 1);');
 			OC.L10N.load(TEST_APP, callbackStub).then(promiseStub);
 			expect(callbackStub.calledOnce).toEqual(true);
 			expect(promiseStub.calledOnce).toEqual(true);

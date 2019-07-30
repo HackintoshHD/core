@@ -18,8 +18,8 @@ function enableApp($app) {
 
 enableApp('files_sharing');
 enableApp('files_trashbin');
-enableApp('files_encryption');
-enableApp('user_ldap');
+enableApp('encryption');
 enableApp('files_versions');
 enableApp('provisioning_api');
-
+enableApp('federation');
+enableApp('federatedfilesharing');

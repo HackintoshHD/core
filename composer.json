@@ -1,0 +1,73 @@
+{
+    "name": "owncloud/core",
+    "description": "A safe home for all your data",
+    "license": "AGPL-1.0",
+    "config" : {
+        "vendor-dir": "lib/composer",
+        "optimize-autoloader": true,
+        "classmap-authoritative": false,
+        "platform": {
+            "php": "7.0.8"
+        }
+    },
+    "autoload" : {
+        "psr-4": {
+            "OC\\": "lib/private",
+            "OC\\Core\\": "core/",
+            "OC\\Settings\\": "settings/",
+            "OCP\\": "lib/public"
+        },
+        "classmap": ["lib/private/legacy"]
+    },
+    "autoload-dev" : {
+        "files": ["tests/lib/TestCase.php"]
+    },
+    "require-dev": {
+        "bamarni/composer-bin-plugin": "^1.2",
+        "jakub-onderka/php-console-highlighter": "^0.4",
+        "mikey179/vfsstream": "^1.6",
+        "phpunit/phpunit": "^6.5",
+        "roave/security-advisories": "dev-master"
+    },
+    "require": {
+        "php": ">=7.0.8",
+        "doctrine/dbal": "^2.5",
+        "phpseclib/phpseclib": "^2.0",
+        "rackspace/php-opencloud": "v1.9.2",
+        "jeremeamia/superclosure": "^2.4",
+        "bantu/ini-get-wrapper": "v1.0.1",
+        "punic/punic": "^3.1",
+        "pear/archive_tar": "1.4.7",
+        "patchwork/utf8": "^1.3",
+        "symfony/console": "^3.1",
+        "symfony/event-dispatcher": "^3.1",
+        "symfony/routing": "^3.1",
+        "symfony/process": "^3.1",
+        "pimple/pimple": "3.2.3",
+        "nikic/php-parser": "^4.0",
+        "icewind/streams": "0.7.1",
+        "swiftmailer/swiftmailer": "^6.0",
+        "guzzlehttp/guzzle": "^5.3",
+        "league/flysystem": "^1.0",
+        "pear/pear-core-minimal": "^v1.10",
+        "interfasys/lognormalizer": "^v1.0",
+        "deepdiver1975/tarstreamer": "v0.1.1",
+        "patchwork/jsqueeze": "^2.0",
+        "lukasreschke/id3parser": "^0.0.3",
+        "sabre/dav": "^4.0",
+        "deepdiver/zipstreamer": "^1.1",
+        "symfony/translation": "^3.4",
+        "zendframework/zend-inputfilter": "^2.8",
+        "zendframework/zend-servicemanager": "^3.3",
+        "zendframework/zend-validator": "^2.10",
+        "composer/semver": "^1.4",
+        "ext-json": "*",
+        "sabre/vobject": "^4.2",
+        "dg/composer-cleaner": "^2.0"
+    },
+    "extra": {
+        "bamarni-bin": {
+            "bin-links": false
+        }
+    }
+}

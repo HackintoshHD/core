@@ -13,22 +13,26 @@ OC.Lostpassword = {
 	resetErrorMsg : t('core', 'Password can not be changed. Please contact your administrator.'),
 
 	init : function() {
-		$('#lost-password').click(OC.Lostpassword.sendLink);
+		$('#lost-password').click(OC.Lostpassword.resetLink);
 		$('#reset-password #submit').click(OC.Lostpassword.resetPassword);
 	},
 
-	sendLink : function(event){
+	resetLink : function(event){
 		event.preventDefault();
 		if (!$('#user').val().length){
 			$('#submit').trigger('click');
 		} else {
-			$.post(
+			if (OC.config['lost_password_link']) {
+				window.location = OC.config['lost_password_link'];
+			} else {
+				$.post(
 					OC.generateUrl('/lostpassword/email'),
 					{
 						user : $('#user').val()
 					},
 					OC.Lostpassword.sendLinkDone
-			);
+				);
+			}
 		}
 	},
 
@@ -71,18 +75,28 @@ OC.Lostpassword = {
 	},
 
 	resetPassword : function(event){
+		$('#password').parent().removeClass('shake');
 		event.preventDefault();
-		if ($('#password').val()){
+		if ($('#password').val() === $('#retypepassword').val()){
 			$.post(
 					$('#password').parents('form').attr('action'),
 					{
 						password : $('#password').val(),
-						proceed: $('#encrypted-continue').attr('checked') ? 'true' : 'false'
+						proceed: $('#encrypted-continue').is(':checked') ? 'true' : 'false'
 					},
 					OC.Lostpassword.resetDone
 			);
+		} else {
+			//Password mismatch happened
+			$('#password').val('');
+			$('#retypepassword').val('');
+			$('#password').parent().addClass('shake');
+			$('#message').addClass('warning');
+			$('#message').text('Passwords do not match');
+			$('#message').show();
+			$('#password').focus();
 		}
-		if($('#encrypted-continue').attr('checked')) {
+		if($('#encrypted-continue').is(':checked')) {
 			$('#reset-password #submit').hide();
 			$('#reset-password #float-spinner').removeClass('hidden');
 		}
@@ -136,4 +150,18 @@ OC.Lostpassword = {
 
 };
 
-$(document).ready(OC.Lostpassword.init);
+$(document).ready(function () {
+	OC.Lostpassword.init();
+	$('#password').keypress(function () {
+		/*
+		 The warning message should be shown only during password mismatch.
+		 Else it should not.
+		 */
+		if (($('#password').val().length >= 0)
+			&& ($('#retypepassword').length)
+			&& ($('#retypepassword').val().length === 0)) {
+			$('#message').removeClass('warning');
+			$('#message').text('');
+		}
+	});
+});

@@ -1,5 +1,26 @@
 <?php
-
+/**
+ * @author Jörn Friedrich Dreyer <jfd@butonic.de>
+ * @author Lukas Reschke <lukas@statuscode.ch>
+ * @author Robin McCorkell <robin@mccorkell.me.uk>
+ * @author Thomas Müller <thomas.mueller@tmit.eu>
+ *
+ * @copyright Copyright (c) 2018, ownCloud GmbH
+ * @license AGPL-3.0
+ *
+ * This code is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License, version 3,
+ * as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License, version 3,
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
+ *
+ */
 OCP\JSON::checkAppEnabled('files_external');
 OCP\JSON::callCheck();
 
@@ -9,18 +30,25 @@ $pattern = '';
 $limit = null;
 $offset = null;
 if (isset($_GET['pattern'])) {
-	$pattern = $_GET['pattern'];
+	$pattern = (string)$_GET['pattern'];
 }
 if (isset($_GET['limit'])) {
-	$limit = $_GET['limit'];
+	$limit = (int)$_GET['limit'];
 }
 if (isset($_GET['offset'])) {
-	$offset = $_GET['offset'];
+	$offset = (int)$_GET['offset'];
 }
 
-$groups = \OC_Group::getGroups($pattern, $limit, $offset);
-$users = \OCP\User::getDisplayNames($pattern, $limit, $offset);
+$groups = [];
+foreach (\OC::$server->getGroupManager()->search($pattern, $limit, $offset) as $group) {
+	$groups[$group->getGID()] = $group->getGID();
+}
 
-$results = array('groups' => $groups, 'users' => $users);
+$users = [];
+foreach (\OC::$server->getUserManager()->searchDisplayName($pattern, $limit, $offset) as $user) {
+	$users[$user->getUID()] = $user->getDisplayName();
+}
+
+$results = ['groups' => $groups, 'users' => $users];
 
 \OCP\JSON::success($results);

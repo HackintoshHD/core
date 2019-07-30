@@ -1,15 +1,14 @@
 OC.L10N.register(
     "files",
     {
+    "Close" : "बंद करें ",
     "Files" : "फाइलें ",
-    "Error" : "त्रुटि",
-    "_%n folder_::_%n folders_" : ["",""],
-    "_%n file_::_%n files_" : ["",""],
-    "_Uploading %n file_::_Uploading %n files_" : ["",""],
-    "_matches '{filter}'_::_match '{filter}'_" : ["",""],
+    "Details" : "विवरण ",
+    "New folder" : "नया फ़ोल्डर",
+    "Upload" : "अपलोड ",
     "Save" : "सहेजें",
     "Settings" : "सेटिंग्स",
-    "New folder" : "नया फ़ोल्डर",
-    "Upload" : "अपलोड "
+    "Delete" : "हटाना",
+    "All files" : "सभी फाइल्स"
 },
 "nplurals=2; plural=(n != 1);");

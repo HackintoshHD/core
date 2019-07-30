@@ -3,8 +3,11 @@ OC.L10N.register(
     {
     "Cancel" : "﻿ರದ್ದು",
     "Share" : "﻿ಹಂಚಿಕೊಳ್ಳಿ",
+    "Sharing" : "﻿ಹಂಚಿಕೆ",
     "Password" : "ಗುಪ್ತ ಪದ",
     "Name" : "﻿ಹೆಸರು",
-    "Download" : "ಪ್ರತಿಯನ್ನು ಸ್ಥಳೀಯವಾಗಿ ಉಳಿಸಿಕೊಳ್ಳಿ"
+    "Expiration date" : "ಮುಕ್ತಾಯ ದಿನಾಂಕ",
+    "Download" : "ಪ್ರತಿಯನ್ನು ಸ್ಥಳೀಯವಾಗಿ ಉಳಿಸಿಕೊಳ್ಳಿ",
+    "Pending" : "﻿ಬಾಕಿ ಇದೆ"
 },
 "nplurals=1; plural=0;");

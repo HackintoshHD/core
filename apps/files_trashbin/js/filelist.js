@@ -93,6 +93,8 @@
 
 		_renderRow: function(fileData, options) {
 			options = options || {};
+			// make a copy to avoid changing original object
+			fileData = _.extend({}, fileData);
 			var dir = this.getCurrentDirectory();
 			var dirListing = dir !== '' && dir !== '/';
 			// show deleted time as mtime
@@ -122,6 +124,16 @@
 			return OC.linkTo('files', 'index.php')+"?view=trashbin&dir="+ encodeURIComponent(dir).replace(/%2F/g, '/');
 		},
 
+		elementToFile: function($el) {
+			var fileInfo = OCA.Files.FileList.prototype.elementToFile($el);
+			if (this.getCurrentDirectory() === '/') {
+				fileInfo.displayName = getDeletedFileName(fileInfo.name);
+			}
+			// no size available
+			delete fileInfo.size;
+			return fileInfo;
+		},
+
 		updateEmptyContent: function(){
 			var exists = this.$fileList.find('tr:first').exists();
 			this.$el.find('#emptycontent').toggleClass('hidden', exists);
@@ -142,6 +154,29 @@
 			this.fileSummary.update();
 			this.updateEmptyContent();
 			this.enableActions();
+		},
+
+		/**
+		 * Event handler for when selecting/deselecting all files
+		 */
+		_onClickSelectAll: function(e) {
+			/*
+			trashbinFiles is a variable which is a clone of this.files.
+			Any change to trashbinFiles will not have any change to this.files
+			 */
+			var trashbinFiles = [];
+			for (var i = 0, len = this.files.length; i < len; i++) {
+				trashbinFiles[i] = {};
+				for (var prop in this.files[i]) {
+					trashbinFiles[i][prop] = this.files[i][prop];
+				}
+			}
+
+			for (var i = 0; i < trashbinFiles.length; i++) {
+				trashbinFiles[i].name = trashbinFiles[i].name + '.d' +
+					Math.floor(trashbinFiles[i].mtime/1000);
+			}
+			OCA.Files.FileList.prototype._onClickSelectAll.call(this, e, trashbinFiles);
 		},
 
 		_onClickRestoreSelected: function(event) {
@@ -239,14 +274,6 @@
 			);
 		},
 
-		_onClickFile: function(event) {
-			var mime = $(this).parent().parent().data('mime');
-			if (mime !== 'httpd/unix-directory') {
-				event.preventDefault();
-			}
-			return OCA.Files.FileList.prototype._onClickFile.apply(this, arguments);
-		},
-
 		generatePreviewUrl: function(urlSpec) {
 			return OC.generateUrl('/apps/files_trashbin/ajax/preview.php?') + $.param(urlSpec);
 		},
@@ -258,12 +285,12 @@
 
 		enableActions: function() {
 			this.$el.find('.action').css('display', 'inline');
-			this.$el.find(':input:checkbox').css('display', 'inline');
+			this.$el.find('input:checkbox').removeClass('u-hidden');
 		},
 
 		disableActions: function() {
 			this.$el.find('.action').css('display', 'none');
-			this.$el.find(':input:checkbox').css('display', 'none');
+			this.$el.find('input:checkbox').addClass('u-hidden');
 		},
 
 		updateStorageStatistics: function() {
@@ -273,7 +300,81 @@
 
 		isSelectedDeletable: function() {
 			return true;
-		}
+		},
+
+		/**
+		 * Reloads the file list using ajax call
+		 *
+		 * @return ajax call object
+		 */
+		reload: function() {
+			this._selectedFiles = {};
+			this._selectionSummary.clear();
+			this.$el.find('.select-all').prop('checked', false);
+			this.showMask();
+			if (this._reloadCall) {
+				this._reloadCall.abort();
+			}
+			this._reloadCall = $.ajax({
+				url: this.getAjaxUrl('list'),
+				data: {
+					dir : this.getCurrentDirectory(),
+					sort: this._sort,
+					sortdirection: this._sortDirection
+				}
+			});
+			var callBack = this.reloadCallback.bind(this);
+			return this._reloadCall.then(callBack, callBack);
+		},
+		reloadCallback: function(result) {
+			delete this._reloadCall;
+			this.hideMask();
+
+			if (!result || result.status === 'error') {
+				// if the error is not related to folder we're trying to load, reload the page to handle logout etc
+				if (result.data.error === 'authentication_error' ||
+					result.data.error === 'token_expired' ||
+					result.data.error === 'application_not_enabled'
+				) {
+					OC.redirect(OC.generateUrl('apps/files'));
+				}
+				OC.Notification.show(result.data.message);
+				return false;
+			}
+
+			if (result.status === 401) {
+				return false;
+			}
+
+			// Firewall Blocked request?
+			if (result.status === 403) {
+				// Go home
+				this.changeDirectory('/');
+				OC.Notification.show(t('files_trashbin', 'This operation is forbidden'));
+				return false;
+			}
+
+			// Did share service die or something else fail?
+			if (result.status === 500) {
+				// Go home
+				this.changeDirectory('/');
+				OC.Notification.show(t('files_trashbin', 'This directory is unavailable, please check the logs or contact the administrator'));
+				return false;
+			}
+
+			if (result.status === 404) {
+				// go back home
+				this.changeDirectory('/');
+				return false;
+			}
+			// aborted ?
+			if (result.status === 0){
+				return true;
+			}
+
+			this.setFiles(result.data.files);
+			return true;
+		},
 
 	});
 

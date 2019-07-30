@@ -1,7 +1,5 @@
 { "translations": {
-    "_%n folder_::_%n folders_" : [""],
-    "_%n file_::_%n files_" : [""],
-    "_Uploading %n file_::_Uploading %n files_" : [""],
-    "_matches '{filter}'_::_match '{filter}'_" : [""]
+    "Storage invalid" : "ພື້ນທີ່ເກັບຂໍ້ມູນບໍ່ຖືກຕ້ອງ",
+    "Unknown error" : "ຂໍ້ຜິດພາດທີ່ບໍ່ຮູ້ສາເຫດ"
 },"pluralForm" :"nplurals=1; plural=0;"
 }

@@ -2,16 +2,21 @@ OC.L10N.register(
     "settings",
     {
     "Invalid request" : "داواکارى نادروستە",
+    "All" : "هەمووی",
     "Enable" : "چالاککردن",
-    "Encryption" : "نهێنیکردن",
     "None" : "هیچ",
     "Login" : "چوونەژوورەوە",
+    "Encryption" : "نهێنیکردن",
     "Server address" : "ناونیشانی ڕاژه",
-    "by" : "له‌لایه‌ن",
+    "Cancel" : "لابردن",
+    "Email" : "ئیمه‌یل",
     "Password" : "وشەی تێپەربو",
     "New password" : "وشەی نهێنی نوێ",
-    "Email" : "ئیمه‌یل",
-    "Cancel" : "لابردن",
-    "Username" : "ناوی به‌کارهێنه‌ر"
+    "Name" : "ناو",
+    "Username" : "ناوی به‌کارهێنه‌ر",
+    "Admin" : "به‌ڕێوه‌به‌ری سه‌ره‌كی",
+    "Error" : "هه‌ڵه",
+    "Share" : "هاوبەشی کردن",
+    "Add" : "زیادکردن"
 },
 "nplurals=2; plural=(n != 1);");
